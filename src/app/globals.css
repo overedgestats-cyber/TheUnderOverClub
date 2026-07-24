@@ -1412,3 +1412,391 @@ button {
     padding: 22px;
   }
 }
+/* All Picks archive */
+
+.archive-hero {
+  min-height: 200px;
+  padding: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background:
+    linear-gradient(rgba(3, 16, 35, 0.86), rgba(3, 19, 14, 0.94)),
+    repeating-linear-gradient(
+      90deg,
+      #061c2d 0 90px,
+      #082638 90px 180px
+    );
+}
+
+.archive-hero > div:first-child > span {
+  color: var(--green);
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.archive-hero h1 {
+  margin: 8px 0;
+  font-size: clamp(40px, 5vw, 66px);
+  letter-spacing: 4px;
+}
+
+.archive-hero p {
+  max-width: 690px;
+  margin: 0;
+  color: #a9adb5;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.archive-total {
+  min-width: 245px;
+  padding: 20px;
+  border: 2px solid var(--yellow);
+  background: rgba(0, 0, 0, 0.48);
+  text-align: center;
+}
+
+.archive-total small,
+.archive-total strong,
+.archive-total span {
+  display: block;
+}
+
+.archive-total small {
+  color: var(--muted);
+}
+
+.archive-total strong {
+  margin: 7px 0;
+  color: var(--yellow);
+  font-size: 38px;
+}
+
+.archive-total span {
+  color: white;
+  font-weight: 900;
+}
+
+.archive-toolbar {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.archive-search {
+  min-width: 280px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid #30343b;
+  background: #06080a;
+  color: var(--muted);
+}
+
+.archive-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+  font: inherit;
+}
+
+.archive-search input::placeholder {
+  color: #747982;
+}
+
+.archive-filter-buttons {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.archive-filter-buttons button,
+.date-filter-button {
+  padding: 10px 12px;
+  border: 2px solid #30343b;
+  background: #0a0d10;
+  color: #c8cad0;
+  font-weight: 900;
+}
+
+.archive-filter-buttons button.selected {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.date-filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--yellow);
+}
+
+.archive-summary {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.archive-summary article {
+  padding: 8px 24px;
+  border-right: 2px solid #22262c;
+}
+
+.archive-summary article:last-child {
+  border-right: 0;
+}
+
+.archive-summary strong,
+.archive-summary span {
+  display: block;
+}
+
+.archive-summary strong {
+  color: var(--green);
+  font-size: 30px;
+}
+
+.archive-summary article:nth-child(3) strong {
+  color: var(--blue);
+}
+
+.archive-summary article:nth-child(4) strong {
+  color: var(--yellow);
+}
+
+.archive-summary span {
+  margin-top: 4px;
+  color: #c2c5ca;
+  font-weight: 900;
+}
+
+.archive-section {
+  padding: 14px;
+}
+
+.archive-count {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.archive-picks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.archive-pick-card {
+  --tone: var(--green);
+
+  padding: 17px;
+  border: 3px solid var(--tone);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--tone) 6%, #080a0d),
+    #06080a
+  );
+}
+
+.archive-pick-card.blue {
+  --tone: var(--blue);
+}
+
+.archive-pick-card.orange {
+  --tone: var(--orange);
+}
+
+.archive-pick-card.purple {
+  --tone: var(--purple);
+}
+
+.archive-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--tone);
+  font-weight: 900;
+}
+
+.archive-status {
+  padding: 4px 7px;
+  border: 1px solid currentColor;
+  font-size: 12px;
+}
+
+.archive-status.won {
+  color: var(--green);
+}
+
+.archive-status.lost {
+  color: #ff4052;
+}
+
+.archive-status.upcoming {
+  color: var(--yellow);
+}
+
+.archive-card-date {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.archive-competition {
+  margin-top: 20px;
+  display: block;
+  color: var(--muted);
+}
+
+.archive-pick-card h3 {
+  min-height: 48px;
+  margin: 7px 0 17px;
+  font-size: 19px;
+}
+
+.archive-selection {
+  min-height: 68px;
+  padding: 12px;
+  border: 2px solid #24282e;
+  background: #050708;
+}
+
+.archive-selection small,
+.archive-selection strong {
+  display: block;
+}
+
+.archive-selection small {
+  color: var(--muted);
+}
+
+.archive-selection strong {
+  margin-top: 6px;
+  color: var(--tone);
+  font-size: 18px;
+}
+
+.archive-card-numbers {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.archive-card-numbers div {
+  padding-left: 9px;
+  border-left: 1px solid #30343b;
+}
+
+.archive-card-numbers small,
+.archive-card-numbers strong {
+  display: block;
+}
+
+.archive-card-numbers small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.archive-card-numbers strong {
+  margin-top: 5px;
+  font-size: 17px;
+}
+
+.archive-confidence-meter {
+  height: 12px;
+  margin: 17px 0;
+  background: #202329;
+}
+
+.archive-confidence-meter span {
+  height: 100%;
+  display: block;
+  background: var(--tone);
+}
+
+.archive-pick-card > button {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 18%, #07090b);
+  color: var(--tone);
+  font-weight: 900;
+}
+
+.archive-pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+.archive-pagination button {
+  min-width: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #30343b;
+  background: #090c0f;
+  color: #d3d5da;
+  font-weight: 900;
+}
+
+.archive-pagination button.active {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.archive-pagination span {
+  padding: 10px 4px;
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .archive-picks-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .archive-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .archive-search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 800px) {
+  .archive-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .archive-total {
+    width: 100%;
+  }
+
+  .archive-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .archive-summary article {
+    padding: 14px;
+    border-right: 0;
+    border-bottom: 1px solid #24282e;
+  }
+
+  .archive-picks-grid {
+    grid-template-columns: 1fr;
+  }
+}
