@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 const API_FOOTBALL_BASE_URL =
   "https://v3.football.api-sports.io";
@@ -70,7 +70,7 @@ type ApiFootballStatus = {
 };
 
 function formatApiErrors(
-  errors: ApiErrors,
+  errors: ApiErrors | undefined,
 ): string | null {
   if (!errors) {
     return null;
@@ -170,3 +170,4 @@ export function getFixturesByDate(
     },
   );
 }
+
