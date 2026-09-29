@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 const API_FOOTBALL_BASE_URL =
   "https://v3.football.api-sports.io";
@@ -12,6 +12,10 @@ type ApiErrors =
 type ApiEnvelope<T> = {
   errors?: ApiErrors;
   results?: number;
+  paging?: {
+    current?: number;
+    total?: number;
+  };
   response?: T;
 };
 
@@ -57,6 +61,62 @@ export type ApiFootballFixture = {
   score?: unknown;
 };
 
+export type ApiFootballOddsResponse = {
+  league?: {
+    id?: number;
+    name?: string;
+  };
+  fixture?: {
+    id?: number;
+    timezone?: string;
+    date?: string;
+    timestamp?: number;
+  };
+  update?: string;
+  bookmakers?: Array<{
+    id?: number;
+    name?: string;
+    bets?: Array<{
+      id?: number;
+      name?: string;
+      values?: Array<{
+        value?: string;
+        odd?: string;
+      }>;
+    }>;
+  }>;
+};
+
+export type ApiFootballStanding = {
+  rank: number;
+  team: {
+    id: number;
+    name: string;
+  };
+  points: number;
+  goalsDiff?: number;
+  all: {
+    played: number;
+    win?: number;
+    draw?: number;
+    lose?: number;
+    goals?: {
+      for?: number;
+      against?: number;
+    };
+  };
+};
+
+type ApiFootballStandingsResponse = {
+  league?: {
+    id?: number;
+    name?: string;
+    country?: string;
+    season?: number;
+    standings?: ApiFootballStanding[][];
+  };
+};
+
 type ApiFootballStatus = {
   subscription?: {
     plan?: string;
@@ -72,33 +132,127 @@ type ApiFootballStatus = {
 function formatApiErrors(
   errors: ApiErrors | undefined,
 ): string | null {
-  if (!errors) {
-    return null;
-  }
-
-  if (typeof errors === "string") {
-    return errors || null;
-  }
-
-  if (Array.isArray(errors)) {
-    return errors.length
-      ? JSON.stringify(errors)
-      : null;
-  }
-
-  if (typeof errors === "object") {
-    return Object.keys(errors).length
-      ? JSON.stringify(errors)
-      : null;
-  }
-
+  if (!errors) return null;
+  if (typeof errors === "string") return errors || null;
+  if (Array.isArray(errors)) return errors.length ? JSON.stringify(errors) : null;
+  if (typeof errors === "object") return Object.keys(errors).length ? JSON.stringify(errors) : null;
   return String(errors);
 }
 
-async function apiFootballRequest<T>(
+const API_FOOTBALL_MIN_INTERVAL_MS = 250;
+const API_FOOTBALL_RATE_LIMIT_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
+
+let apiFootballThrottleTail: Promise<void> = Promise.resolve();
+let apiFootballNextRequestAt = 0;
+
+function apiFootballSleep(milliseconds: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+async function reserveApiFootballRequestSlot() {
+  const reservation = apiFootballThrottleTail.then(async () => {
+    const now = Date.now();
+    const waitMs = Math.max(0, apiFootballNextRequestAt - now);
+    if (waitMs > 0) await apiFootballSleep(waitMs);
+    apiFootballNextRequestAt = Date.now() + API_FOOTBALL_MIN_INTERVAL_MS;
+  });
+
+  apiFootballThrottleTail = reservation.catch(() => undefined);
+  await reservation;
+}
+
+function isApiFootballRateLimitPayload(payload: unknown) {
+  if (!payload || typeof payload !== "object") return false;
+  const errors = (payload as { errors?: unknown }).errors;
+  if (!errors) return false;
+  const text =
+    typeof errors === "string"
+      ? errors
+      : JSON.stringify(errors);
+
+  return /rate\s*limit|ratelimit|too many requests|requests per minute|requests per second/i.test(text);
+}
+
+function retryAfterMilliseconds(response: Response, fallback: number) {
+  const raw = response.headers.get("retry-after");
+  if (!raw) return fallback;
+
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds > 0) {
+    return Math.ceil(seconds * 1000);
+  }
+
+  const date = Date.parse(raw);
+  if (Number.isFinite(date)) {
+    return Math.max(0, date - Date.now());
+  }
+
+  return fallback;
+}
+
+async function apiFootballFetchWithRateLimit(
+  url: URL,
+  apiKey: string,
+): Promise<Response> {
+  const totalAttempts =
+    API_FOOTBALL_RATE_LIMIT_RETRY_DELAYS_MS.length + 1;
+
+  for (let attempt = 0; attempt < totalAttempts; attempt += 1) {
+    await reserveApiFootballRequestSlot();
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "x-apisports-key": apiKey,
+      },
+      cache: "no-store",
+    });
+
+    let rateLimited = response.status === 429;
+
+    if (!rateLimited) {
+      const contentType =
+        response.headers.get("content-type") ?? "";
+
+      if (contentType.includes("application/json")) {
+        try {
+          const payload = await response.clone().json();
+          rateLimited = isApiFootballRateLimitPayload(payload);
+        } catch {
+          // Normal parser below will handle malformed JSON.
+        }
+      }
+    }
+
+    if (!rateLimited) return response;
+
+    const isLastAttempt = attempt === totalAttempts - 1;
+    if (isLastAttempt) return response;
+
+    const fallbackDelay =
+      API_FOOTBALL_RATE_LIMIT_RETRY_DELAYS_MS[attempt];
+
+    const waitMs =
+      retryAfterMilliseconds(response, fallbackDelay);
+
+    console.warn(
+      `[API-Football] Rate limit reached. Retrying in ${waitMs}ms.`,
+    );
+
+    await apiFootballSleep(waitMs);
+  }
+
+  throw new Error(
+    "API-Football request retry loop exited unexpectedly.",
+  );
+}
+
+async function apiFootballEnvelope<T>(
   path: string,
   params: Record<string, string | number> = {},
-): Promise<T> {
+): Promise<ApiEnvelope<T>> {
   const apiKey =
     process.env.API_FOOTBALL_KEY?.trim();
 
@@ -116,13 +270,11 @@ async function apiFootballRequest<T>(
     url.searchParams.set(key, String(value));
   }
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-apisports-key": apiKey,
-    },
-    cache: "no-store",
-  });
+  const response =
+    await apiFootballFetchWithRateLimit(
+      url,
+      apiKey,
+    );
 
   const data =
     (await response.json()) as ApiEnvelope<T>;
@@ -131,9 +283,7 @@ async function apiFootballRequest<T>(
 
   if (!response.ok) {
     throw new Error(
-      `API-Football HTTP ${response.status}: ${
-        apiError ?? "Unknown error"
-      }`,
+      `API-Football HTTP ${response.status}: ${apiError ?? "Unknown error"}`,
     );
   }
 
@@ -142,6 +292,19 @@ async function apiFootballRequest<T>(
       `API-Football error: ${apiError}`,
     );
   }
+
+  return data;
+}
+
+async function apiFootballRequest<T>(
+  path: string,
+  params: Record<string, string | number> = {},
+): Promise<T> {
+  const data =
+    await apiFootballEnvelope<T>(
+      path,
+      params,
+    );
 
   if (data.response === undefined) {
     throw new Error(
@@ -171,3 +334,98 @@ export function getFixturesByDate(
   );
 }
 
+export async function getFixtureById(
+  fixtureId: number,
+): Promise<ApiFootballFixture | null> {
+  const fixtures =
+    await apiFootballRequest<ApiFootballFixture[]>(
+      "/fixtures",
+      {
+        id: fixtureId,
+      },
+    );
+
+  return fixtures[0] ?? null;
+}
+
+export function getRecentTeamFixtures(
+  teamId: number,
+  last = 24,
+) {
+  return apiFootballRequest<ApiFootballFixture[]>(
+    "/fixtures",
+    {
+      team: teamId,
+      last,
+      status: "FT-AET-PEN",
+    },
+  );
+}
+
+export function getHeadToHeadFixtures(
+  firstTeamId: number,
+  secondTeamId: number,
+  last = 8,
+) {
+  return apiFootballRequest<ApiFootballFixture[]>(
+    "/fixtures/headtohead",
+    {
+      h2h: `${firstTeamId}-${secondTeamId}`,
+      last,
+      status: "FT-AET-PEN",
+    },
+  );
+}
+
+export async function getOddsForFixture(
+  fixtureId: number,
+) {
+  const combined: ApiFootballOddsResponse[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const data =
+      await apiFootballEnvelope<ApiFootballOddsResponse[]>(
+        "/odds",
+        {
+          fixture: fixtureId,
+          page,
+        },
+      );
+
+    combined.push(
+      ...(data.response ?? []),
+    );
+
+    totalPages =
+      data.paging?.total ?? 1;
+
+    page += 1;
+  } while (page <= totalPages);
+
+  return combined;
+}
+
+export async function getStandings(
+  leagueId: number,
+  season: number,
+): Promise<ApiFootballStanding[]> {
+  const response =
+    await apiFootballRequest<ApiFootballStandingsResponse[]>(
+      "/standings",
+      {
+        league: leagueId,
+        season,
+      },
+    );
+
+  const groups =
+    response.flatMap(
+      (item) =>
+        item.league?.standings ??
+        [],
+    );
+
+  return groups.flat();
+}
