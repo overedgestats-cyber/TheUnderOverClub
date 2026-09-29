@@ -1,6 +1,9 @@
 import "server-only";
 
 import {
+  oneXTwoSanityReason,
+} from "@/lib/analysis/recommendations";
+import {
   createAdminSupabaseClient,
 } from "@/lib/supabase/admin";
 import {
@@ -24,6 +27,9 @@ type RecommendationRow =
       | "one_x_two"
       | "double_chance";
     selection: string;
+    model_probability?: number | string;
+    fair_bookmaker_probability?: number | string | null;
+    fair_value_edge?: number | string | null;
   };
 
 function db() {
@@ -114,6 +120,9 @@ async function loadPaidRecommendations(): Promise<
         "access_tier",
         "market",
         "selection",
+        "model_probability",
+        "fair_bookmaker_probability",
+        "fair_value_edge",
         "odds",
         "published_at",
         "result_status",
@@ -137,9 +146,30 @@ async function loadPaidRecommendations(): Promise<
     );
   }
 
-  return (
-    data ?? []
-  ) as RecommendationRow[];
+  const rows =
+    (data ?? []) as RecommendationRow[];
+
+  return rows.filter((row) => {
+    const bookmakerProbability =
+      row.fair_bookmaker_probability == null
+        ? null
+        : Number(row.fair_bookmaker_probability);
+
+    const valueEdge =
+      row.fair_value_edge == null
+        ? null
+        : Number(row.fair_value_edge);
+
+    return (
+      oneXTwoSanityReason({
+        market: row.market,
+        modelProbability:
+          Number(row.model_probability ?? 0),
+        bookmakerProbability,
+        valueEdge,
+      }) === null
+    );
+  });
 }
 
 async function loadFreePicks(): Promise<
