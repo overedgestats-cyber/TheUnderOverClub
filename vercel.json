@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/fixture-sync",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/free-odds-morning",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/free-odds-afternoon",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/settlement",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/daily-publish",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
