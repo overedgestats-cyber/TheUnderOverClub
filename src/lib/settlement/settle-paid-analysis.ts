@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getFixturesByDate, type ApiFootballFixture } from "@/lib/api-football/client";
+import { getFixtureById, getFixturesByDate, type ApiFootballFixture } from "@/lib/api-football/client";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getSofiaDate } from "@/lib/time/sofia";
 import { settleSelection, unitProfitForResult, type PickResult, type SupportedMarket } from "@/lib/settlement/settle-pick";
@@ -70,10 +70,34 @@ export async function settlePaidAnalysis({ date = getSofiaDate(), commit = false
   const notFinal: any[] = [];
 
   for (const fixture of dbFixtures) {
-    const apiFixture = apiMap.get(fixture.provider_fixture_id);
-    if (!apiFixture) { notFinal.push({ fixtureId: fixture.id, providerFixtureId: fixture.provider_fixture_id, match: `${fixture.home_team_name} vs ${fixture.away_team_name}`, status: null }); continue; }
-    const finalScore = finalScoreFromApi(apiFixture);
-    if (!finalScore) { notFinal.push({ fixtureId: fixture.id, providerFixtureId: fixture.provider_fixture_id, match: `${fixture.home_team_name} vs ${fixture.away_team_name}`, status: apiFixture.fixture.status?.short ?? null }); continue; }
+    let apiFixture = apiMap.get(fixture.provider_fixture_id) ?? null;
+    let finalScore = apiFixture ? finalScoreFromApi(apiFixture) : null;
+
+    if (!finalScore) {
+      try {
+        const directFixture = await getFixtureById(fixture.provider_fixture_id);
+
+        if (directFixture) {
+          apiFixture = directFixture as SettlementFixturePayload;
+          finalScore = finalScoreFromApi(apiFixture);
+        }
+      } catch (error) {
+        console.warn(
+          `Could not refresh fixture ${fixture.provider_fixture_id} by ID during settlement:`,
+          error,
+        );
+      }
+    }
+
+    if (!apiFixture || !finalScore) {
+      notFinal.push({
+        fixtureId: fixture.id,
+        providerFixtureId: fixture.provider_fixture_id,
+        match: `${fixture.home_team_name} vs ${fixture.away_team_name}`,
+        status: apiFixture?.fixture.status?.short ?? null,
+      });
+      continue;
+    }
 
     const tracking = trackingRows.filter(r => r.fixture_id === fixture.id).map(r => ({ id: r.id, market: r.market, selection: r.selection, odds: r.odds, result: settleSelection({ market: r.market, selection: r.selection, homeScore: finalScore.home, awayScore: finalScore.away }) }));
     const official = officialRows.filter(r => r.fixture_id === fixture.id).map(r => {
