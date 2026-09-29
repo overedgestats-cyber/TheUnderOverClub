@@ -131,7 +131,10 @@ async function getPaidFixturesForDate(
     );
   }
 
-  return ((data ?? []) as FixtureRow[])
+  const fixtureRows =
+    (data ?? []) as unknown as FixtureRow[];
+
+  return fixtureRows
     .filter(
       (fixture) =>
         getSofiaDate(
@@ -172,7 +175,7 @@ export async function publishPaidBoard(
   }
 
   const existingRun =
-    existingRunData as ExistingRun | null;
+    existingRunData as unknown as ExistingRun | null;
 
   if (
     existingRun?.status === "published"
@@ -230,7 +233,12 @@ export async function publishPaidBoard(
       );
     }
 
-    publicationRunId = data.id;
+    const createdRun =
+      data as unknown as {
+        id: string;
+      };
+
+    publicationRunId = createdRun.id;
   } else {
     const { error } = await supabase
       .from("daily_board_fixtures")
@@ -295,19 +303,28 @@ export async function publishPaidBoard(
     );
   }
 
+  const publishedRunRow =
+    publishedRun as unknown as {
+      id: string;
+      fixture_count: number;
+      recommendation_count: number;
+      published_at: string | null;
+      published_late: boolean | null;
+    };
+
   return {
     created: true,
     immutable: true,
     publicationRunId:
-      publishedRun.id,
+      publishedRunRow.id,
     date,
     fixtureCount:
-      publishedRun.fixture_count,
+      publishedRunRow.fixture_count,
     recommendationCount:
-      publishedRun.recommendation_count,
+      publishedRunRow.recommendation_count,
     publishedAt:
-      publishedRun.published_at,
+      publishedRunRow.published_at,
     publishedLate:
-      publishedRun.published_late ?? false,
+      publishedRunRow.published_late ?? false,
   };
 }
