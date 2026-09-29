@@ -9,11 +9,15 @@ import {
 
 export async function runFixtureSync() {
   const {
+    twoDaysAgo,
+    yesterday,
     today,
     tomorrow,
   } = automationDates();
 
   const dates = [
+    twoDaysAgo,
+    yesterday,
     today,
     tomorrow,
   ];
