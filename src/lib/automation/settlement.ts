@@ -4,6 +4,9 @@ import {
   automationDates,
 } from "@/lib/automation/dates";
 import {
+  importFixturesForDate,
+} from "@/lib/fixtures/import-fixtures";
+import {
   settleFreePicks,
 } from "@/lib/settlement/settle-free-picks";
 import {
@@ -26,6 +29,11 @@ export async function runSettlementReconciliation() {
   const results = [];
 
   for (const date of dates) {
+    const fixtureSync =
+      await importFixturesForDate(
+        date,
+      );
+
     const [
       free,
       paid,
@@ -42,6 +50,7 @@ export async function runSettlementReconciliation() {
 
     results.push({
       date,
+      fixtureSync,
       free,
       paid,
     });
