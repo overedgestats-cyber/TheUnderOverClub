@@ -70,6 +70,16 @@ export async function getPaidBoard(
     return null;
   }
 
+  const runRow =
+    run as unknown as {
+      id: string;
+      publication_date: string;
+      published_at: string | null;
+      published_late: boolean | null;
+      fixture_count: number;
+      recommendation_count: number;
+    };
+
   const {
     data: rows,
     error: rowsError,
@@ -98,7 +108,7 @@ export async function getPaidBoard(
         )
       `,
     )
-    .eq("publication_run_id", run.id)
+    .eq("publication_run_id", runRow.id)
     .order(
       "league_display_order",
       {
@@ -131,7 +141,10 @@ export async function getPaidBoard(
     }
   >();
 
-  for (const row of (rows ?? []) as BoardFixture[]) {
+  const boardRows =
+    (rows ?? []) as unknown as BoardFixture[];
+
+  for (const row of boardRows) {
     const fixture =
       unwrapFixture(row.fixtures);
 
@@ -163,7 +176,7 @@ export async function getPaidBoard(
   }
 
   return {
-    ...run,
+    ...runRow,
     leagues: Array.from(
       leagues.values(),
     ),
