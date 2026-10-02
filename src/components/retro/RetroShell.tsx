@@ -395,7 +395,29 @@ export default async function RetroShell({
             </p>
           </div>
 
-          <nav>
+          <nav aria-label="Footer links">
+            <a
+              href="https://www.facebook.com/profile.php?id=61591927651376"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="The Under Over Club on Facebook"
+            >
+              FACEBOOK
+            </a>
+            <a
+              href="https://www.youtube.com/@theunderoverclub"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="The Under Over Club on YouTube"
+            >
+              YOUTUBE
+            </a>
+            <a
+              href="mailto:theunderoverclub@gmail.com"
+              aria-label="Email The Under Over Club"
+            >
+              EMAIL
+            </a>
             <Link href="/about">ABOUT US</Link>
             <Link href="/terms">
               TERMS

@@ -2,14 +2,14 @@
   {
     "date": "2026-10-01",
     "tier": "paid",
-    "mode": "dry-run",
+    "mode": "commit",
     "settled": 2,
     "pendingFixtures": 0
   },
   {
     "date": "2026-10-01",
     "tier": "free",
-    "mode": "dry-run",
+    "mode": "commit",
     "settled": 1,
     "pendingFixtures": null
   }
