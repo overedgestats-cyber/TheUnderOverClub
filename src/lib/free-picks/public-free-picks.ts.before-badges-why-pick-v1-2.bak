@@ -1,0 +1,211 @@
+﻿import "server-only";
+
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { getSofiaDate } from "@/lib/time/sofia";
+
+type FreePickDbRow = {
+  id: string;
+  publication_date: string;
+  rank_position: number;
+  selection: "over_2_5" | "under_2_5";
+  model_probability: number;
+  confidence: number;
+  confidence_band: "75_plus" | "fallback";
+  bookmaker_name: string | null;
+  odds: number | null;
+  odds_source: "bet365" | "market_median_fallback" | null;
+  published_at: string;
+  result_status: "pending" | "won" | "lost" | "void";
+  final_home_score: number | null;
+  final_away_score: number | null;
+  settled_at: string | null;
+  analysis_snapshot: {
+    fixtureId?: number;
+    displaySelection?: string;
+    competition?: string;
+    country?: string | null;
+    kickoffAt?: string;
+    homeTeam?: string;
+    awayTeam?: string;
+    modelProbabilityPct?: number;
+    confidencePct?: number;
+    priorityBand?: string;
+  } | null;
+};
+
+export type PublicFreePick = {
+  id: string;
+  date: string;
+  rank: number;
+  fixtureId: number | null;
+  competition: string;
+  country: string | null;
+  kickoffAt: string | null;
+  home: string;
+  away: string;
+  selection: string;
+  modelProbabilityPct: number;
+  confidencePct: number;
+  confidenceBand: "75_plus" | "fallback";
+  odds: number | null;
+  bookmakerName: string | null;
+  oddsSource: "bet365" | "market_median_fallback" | null;
+  resultStatus: "pending" | "won" | "lost" | "void";
+  finalHomeScore: number | null;
+  finalAwayScore: number | null;
+  settledAt: string | null;
+  publishedAt: string;
+};
+
+export type PublicFreePicksData = {
+  requestedDate: string | null;
+  today: string;
+  displayDate: string;
+  dateMode: "today" | "future" | "past" | "none";
+  picks: PublicFreePick[];
+};
+
+function db() {
+  return createAdminSupabaseClient() as any;
+}
+
+function fallbackSelection(selection: "over_2_5" | "under_2_5") {
+  return selection === "over_2_5" ? "Over 2.5" : "Under 2.5";
+}
+
+function mapPick(row: FreePickDbRow): PublicFreePick {
+  const snapshot = row.analysis_snapshot ?? {};
+
+  return {
+    id: row.id,
+    date: row.publication_date,
+    rank: row.rank_position,
+    fixtureId: snapshot.fixtureId ?? null,
+    competition: snapshot.competition ?? "Competition",
+    country: snapshot.country ?? null,
+    kickoffAt: snapshot.kickoffAt ?? null,
+    home: snapshot.homeTeam ?? "Home",
+    away: snapshot.awayTeam ?? "Away",
+    selection: snapshot.displaySelection ?? fallbackSelection(row.selection),
+    modelProbabilityPct:
+      snapshot.modelProbabilityPct ?? Math.round(row.model_probability * 100),
+    confidencePct:
+      snapshot.confidencePct ?? Math.round(row.confidence * 100),
+    confidenceBand: row.confidence_band,
+    odds: row.odds,
+    bookmakerName: row.bookmaker_name,
+    oddsSource: row.odds_source,
+    resultStatus: row.result_status,
+    finalHomeScore: row.final_home_score,
+    finalAwayScore: row.final_away_score,
+    settledAt: row.settled_at,
+    publishedAt: row.published_at,
+  };
+}
+
+async function loadDate(date: string): Promise<PublicFreePick[]> {
+  const client = db();
+
+  const { data, error } = await client
+    .from("free_pick_publications")
+    .select(
+      [
+        "id",
+        "publication_date",
+        "rank_position",
+        "selection",
+        "model_probability",
+        "confidence",
+        "confidence_band",
+        "bookmaker_name",
+        "odds",
+        "odds_source",
+        "published_at",
+        "result_status",
+        "final_home_score",
+        "final_away_score",
+        "settled_at",
+        "analysis_snapshot",
+      ].join(","),
+    )
+    .eq("publication_date", date)
+    .order("rank_position", { ascending: true });
+
+  if (error) {
+    throw new Error(`Could not load public Free Picks for ${date}: ${error.message}`);
+  }
+
+  return ((data ?? []) as FreePickDbRow[]).map(mapPick);
+}
+
+async function findNextPublicationDate(fromDate: string): Promise<string | null> {
+  const client = db();
+
+  const { data, error } = await client
+    .from("free_pick_publications")
+    .select("publication_date")
+    .gte("publication_date", fromDate)
+    .order("publication_date", { ascending: true })
+    .limit(1);
+
+  if (error) {
+    throw new Error(`Could not find next Free Picks publication date: ${error.message}`);
+  }
+
+  return (data?.[0]?.publication_date ?? null) as string | null;
+}
+
+export async function getPublicFreePicks(
+  requestedDate?: string,
+): Promise<PublicFreePicksData> {
+  const today = getSofiaDate();
+
+  if (requestedDate) {
+    const picks = await loadDate(requestedDate);
+
+    return {
+      requestedDate,
+      today,
+      displayDate: requestedDate,
+      dateMode:
+        requestedDate === today
+          ? "today"
+          : requestedDate > today
+          ? "future"
+          : "past",
+      picks,
+    };
+  }
+
+  const todaysPicks = await loadDate(today);
+
+  if (todaysPicks.length > 0) {
+    return {
+      requestedDate: null,
+      today,
+      displayDate: today,
+      dateMode: "today",
+      picks: todaysPicks,
+    };
+  }
+
+  const nextDate = await findNextPublicationDate(today);
+
+  if (!nextDate) {
+    return {
+      requestedDate: null,
+      today,
+      displayDate: today,
+      dateMode: "none",
+      picks: [],
+    };
+  }
+
+  return {
+    requestedDate: null,
+    today,
+    displayDate: nextDate,
+    dateMode: nextDate === today ? "today" : "future",
+    picks: await loadDate(nextDate),
+  };
+}

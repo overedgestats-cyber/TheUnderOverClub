@@ -1,0 +1,150 @@
+﻿import {
+  auth,
+  currentUser,
+} from "@clerk/nextjs/server";
+import {
+  UserButton,
+} from "@clerk/nextjs";
+import Link from "next/link";
+
+import {
+  getClerkPrimaryEmail,
+  syncCustomerAccount,
+} from "@/lib/auth/customer";
+import {
+  getPaidEntitlement,
+} from "@/lib/auth/entitlement";
+
+import styles from "./account.module.css";
+
+export const dynamic = "force-dynamic";
+
+export default async function AccountPage() {
+  const { userId } = await auth.protect();
+  const user = await currentUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const email = getClerkPrimaryEmail(user);
+
+  await syncCustomerAccount({
+    clerkUserId: userId,
+    email,
+  });
+
+  const entitlement = await getPaidEntitlement(userId);
+
+  const membershipLabel = entitlement.isAdmin
+    ? "ADMIN"
+    : entitlement.hasSubscriptionAccess
+    ? "ACTIVE"
+    : entitlement.hasDailyAccess
+    ? "DAY PASS"
+    : "FREE";
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <Link href="/" className={styles.brand}>
+            THE UNDER OVER CLUB
+          </Link>
+
+          <UserButton />
+        </header>
+
+        <section className={styles.card}>
+          <span>ACCOUNT</span>
+
+          <h1>
+            {user.firstName
+              ? `Hi, ${user.firstName}`
+              : "Member Account"}
+          </h1>
+
+          <p>{email ?? "No email available"}</p>
+
+          <div className={styles.status}>
+            <span>MEMBERSHIP</span>
+            <strong>{membershipLabel}</strong>
+          </div>
+
+          {entitlement.isAdmin ? (
+            <div className={styles.details}>
+              <div>
+                <span>ROLE</span>
+                <strong>SUPER USER</strong>
+              </div>
+
+              <div>
+                <span>PAID PICKS ACCESS</span>
+                <strong>ALWAYS ON</strong>
+              </div>
+            </div>
+          ) : null}
+
+          {!entitlement.isAdmin && entitlement.hasDailyAccess ? (
+            <div className={styles.details}>
+              <div>
+                <span>DAY PASS</span>
+                <strong>{entitlement.accessDate}</strong>
+              </div>
+
+              <div>
+                <span>ACCESS</span>
+                <strong>PAID PICKS</strong>
+              </div>
+            </div>
+          ) : null}
+
+          {!entitlement.isAdmin && entitlement.activeSubscription ? (
+            <div className={styles.details}>
+              <div>
+                <span>STATUS</span>
+                <strong>
+                  {String(
+                    entitlement.activeSubscription.status,
+                  ).toUpperCase()}
+                </strong>
+              </div>
+
+              <div>
+                <span>CANCEL AT PERIOD END</span>
+                <strong>
+                  {entitlement.activeSubscription.cancel_at_period_end
+                    ? "YES"
+                    : "NO"}
+                </strong>
+              </div>
+            </div>
+          ) : null}
+
+          <div className={styles.actions}>
+            {entitlement.hasPaidAccess ? (
+              <Link href="/paid-picks">
+                VIEW PAID PICKS
+              </Link>
+            ) : (
+              <Link href="/subscription">
+                VIEW PLANS
+              </Link>
+            )}
+
+            {!entitlement.isAdmin && entitlement.stripeCustomerId ? (
+              <form
+                action="/api/billing/portal"
+                method="post"
+              >
+                <button type="submit">
+                  MANAGE BILLING
+                </button>
+              </form>
+            ) : null}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}

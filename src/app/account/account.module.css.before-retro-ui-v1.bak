@@ -1,0 +1,116 @@
+﻿.page {
+  min-height: 100vh;
+  background: #050807;
+  color: #f2f6f3;
+}
+
+.shell {
+  width: min(900px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  color: #6bf39c;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.card {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid #29372f;
+  background: #090e0b;
+  box-shadow: 6px 6px 0 #020302;
+}
+
+.card > span,
+.status span,
+.details span {
+  color: #738078;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.card h1 {
+  margin: 10px 0;
+  font-size: 42px;
+}
+
+.card p {
+  color: #87938c;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #315b43;
+  background: #0b1a12;
+}
+
+.status strong {
+  color: #6bf39c;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 14px;
+  border: 1px solid #222d27;
+}
+
+.details div {
+  padding: 16px;
+}
+
+.details div + div {
+  border-left: 1px solid #222d27;
+}
+
+.details span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.actions a,
+.actions button {
+  display: inline-block;
+  padding: 12px 14px;
+  border: 1px solid #3fcf75;
+  background: #102419;
+  color: #70f39f;
+  text-decoration: none;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .details {
+    grid-template-columns: 1fr;
+  }
+
+  .details div + div {
+    border-left: 0;
+    border-top: 1px solid #222d27;
+  }
+}

@@ -1,0 +1,123 @@
+﻿.page {
+  min-height: 100vh;
+  background: #050807;
+  color: #f2f6f3;
+}
+
+.shell {
+  width: min(1100px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.brand {
+  color: #6bf39c;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.hero {
+  margin-top: 26px;
+  padding: 26px;
+  border: 1px solid #29372f;
+  background: #0a100c;
+  box-shadow: 6px 6px 0 #020302;
+}
+
+.hero span,
+.card > span {
+  color: #6bf39c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.hero h1 {
+  margin: 8px 0;
+  font-size: clamp(38px, 7vw, 66px);
+}
+
+.hero p {
+  margin: 0;
+  color: #849188;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.card {
+  position: relative;
+  padding: 20px;
+  border: 1px solid #29372f;
+  background: #090e0b;
+  box-shadow: 5px 5px 0 #020302;
+}
+
+.badge {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  padding: 7px 9px;
+  border: 1px solid #3d875a;
+  background: #102619;
+  color: #73f5a1;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.card h2 {
+  margin: 18px 0 8px;
+  font-size: 28px;
+}
+
+.card p {
+  min-height: 64px;
+  color: #7e8a83;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.card button,
+.button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid #4adc7d;
+  background: #102419;
+  color: #75f6a3;
+  text-align: center;
+  text-decoration: none;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.notice {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #574d25;
+  background: #151207;
+  color: #ddcf72;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,32 +1,19 @@
-﻿$ErrorActionPreference = "Stop"
+﻿param(
+  [Parameter(Mandatory = $false)]
+  [string]$Date,
 
-$project =
-  "C:\Users\Marty\Desktop\theunderoverclub"
+  [switch]$Commit
+)
 
-Set-Location $project
-
-$keyLine = Get-Content ".env.local" |
-  Where-Object {
-    $_ -match '^\s*INTERNAL_API_SECRET='
-  } |
-  Select-Object -Last 1
-
-if (-not $keyLine) {
-  throw "INTERNAL_API_SECRET was not found in .env.local"
-}
-
-$key = (
-  ($keyLine -split "=", 2)[1]
-).Trim().Trim('"').Trim("'")
-
-$result = Invoke-RestMethod `
-  -Uri "http://localhost:3000/api/admin/publish-paid-board" `
-  -Method Post `
-  -Headers @{
-    Authorization = "Bearer $key"
-  } `
-  -ContentType "application/json" `
-  -Body "{}"
-
-$result |
-  ConvertTo-Json -Depth 20
+Write-Host ""
+Write-Host "BLOCKED: this legacy runner used /api/admin/publish-paid-board and could publish the wrong Sofia date." -ForegroundColor Red
+Write-Host ""
+Write-Host "Use the current paid-analysis runner instead:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  powershell -ExecutionPolicy Bypass -File .\run_paid_board.ps1 -Date 2026-08-20" -ForegroundColor White
+Write-Host ""
+Write-Host "Review the output first. Only after review:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  powershell -ExecutionPolicy Bypass -File .\run_paid_board.ps1 -Date 2026-08-20 -Commit" -ForegroundColor White
+Write-Host ""
+exit 1

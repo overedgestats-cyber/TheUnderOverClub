@@ -1,0 +1,229 @@
+﻿import {
+  auth,
+  currentUser,
+} from "@clerk/nextjs/server";
+import type {
+  NextRequest,
+} from "next/server";
+
+import {
+  ensureStripeCustomer,
+} from "@/lib/auth/customer";
+import {
+  getStripe,
+} from "@/lib/stripe/client";
+import {
+  configuredPriceId,
+  isBillingPlanKey,
+  PLAN_DEFINITIONS,
+} from "@/lib/stripe/plans";
+import {
+  getSofiaDate,
+} from "@/lib/time/sofia";
+
+export const dynamic =
+  "force-dynamic";
+
+export async function POST(
+  request:
+    NextRequest,
+) {
+  const {
+    isAuthenticated,
+    userId,
+  } =
+    await auth();
+
+  if (
+    !isAuthenticated ||
+    !userId
+  ) {
+    return Response.redirect(
+      new URL(
+        "/sign-in",
+        request.url,
+      ),
+      303,
+    );
+  }
+
+  const form =
+    await request
+      .formData();
+
+  const plan =
+    form.get("plan");
+
+  if (
+    !isBillingPlanKey(
+      plan,
+    )
+  ) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Invalid access plan",
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  const user =
+    await currentUser();
+
+  if (!user) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Authenticated Clerk user could not be loaded",
+      },
+      {
+        status: 401,
+      },
+    );
+  }
+
+  const {
+    stripeCustomerId,
+  } =
+    await ensureStripeCustomer({
+      clerkUserId:
+        userId,
+      user,
+    });
+
+  const stripe =
+    getStripe();
+
+  const priceId =
+    configuredPriceId(
+      plan,
+    );
+
+  const definition =
+    PLAN_DEFINITIONS[
+      plan
+    ];
+
+  const origin =
+    new URL(
+      request.url,
+    ).origin;
+
+  if (
+    definition
+      .checkoutMode ===
+    "payment"
+  ) {
+    const accessDate =
+      getSofiaDate();
+
+    const session =
+      await stripe
+        .checkout
+        .sessions
+        .create({
+          mode:
+            "payment",
+          customer:
+            stripeCustomerId,
+          line_items: [
+            {
+              price:
+                priceId,
+              quantity:
+                1,
+            },
+          ],
+          client_reference_id:
+            userId,
+          metadata: {
+            clerk_user_id:
+              userId,
+            plan:
+              "daily",
+            access_date:
+              accessDate,
+          },
+          payment_intent_data: {
+            metadata: {
+              clerk_user_id:
+                userId,
+              plan:
+                "daily",
+              access_date:
+                accessDate,
+            },
+          },
+          success_url:
+            `${origin}/account?checkout=success`,
+          cancel_url:
+            `${origin}/subscription?checkout=cancelled`,
+        });
+
+    if (!session.url) {
+      throw new Error(
+        "Stripe Checkout did not return a URL",
+      );
+    }
+
+    return Response.redirect(
+      session.url,
+      303,
+    );
+  }
+
+  const session =
+    await stripe
+      .checkout
+      .sessions
+      .create({
+        mode:
+          "subscription",
+        customer:
+          stripeCustomerId,
+        line_items: [
+          {
+            price:
+              priceId,
+            quantity:
+              1,
+          },
+        ],
+        client_reference_id:
+          userId,
+        metadata: {
+          clerk_user_id:
+            userId,
+          plan,
+        },
+        subscription_data: {
+          metadata: {
+            clerk_user_id:
+              userId,
+            plan,
+          },
+        },
+        allow_promotion_codes:
+          true,
+        success_url:
+          `${origin}/account?checkout=success`,
+        cancel_url:
+          `${origin}/subscription?checkout=cancelled`,
+      });
+
+  if (!session.url) {
+    throw new Error(
+      "Stripe Checkout did not return a URL",
+    );
+  }
+
+  return Response.redirect(
+    session.url,
+    303,
+  );
+}

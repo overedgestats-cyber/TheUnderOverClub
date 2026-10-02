@@ -1,0 +1,202 @@
+﻿import Link from "next/link";
+
+import {
+  requirePaidPageAccess,
+} from "@/lib/auth/entitlement";
+import {
+  getPaidPicks,
+  type PaidPick,
+} from "@/lib/paid-picks/public-paid-picks";
+
+import styles from "./paid-picks.module.css";
+
+export const dynamic =
+  "force-dynamic";
+
+function kickoff(
+  value:
+    string | null,
+) {
+  if (!value) {
+    return "TBC";
+  }
+
+  return new Intl
+    .DateTimeFormat(
+      "en-GB",
+      {
+        timeZone:
+          "Europe/Sofia",
+        hour:
+          "2-digit",
+        minute:
+          "2-digit",
+        hour12:
+          false,
+      },
+    )
+    .format(
+      new Date(value),
+    );
+}
+
+export default async function PaidPicksPage() {
+  await requirePaidPageAccess();
+
+  const board =
+    await getPaidPicks();
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <Link
+            href="/"
+            className={styles.brand}
+          >
+            THE UNDER OVER CLUB
+          </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/today">
+              FREE
+            </Link>
+            <Link
+              className={styles.active}
+              href="/paid-picks"
+            >
+              PAID PICKS
+            </Link>
+            <Link href="/statistics">
+              STATS
+            </Link>
+            <Link href="/account">
+              ACCOUNT
+            </Link>
+          </nav>
+        </header>
+
+        <section className={styles.hero}>
+          <span>
+            MEMBERS ONLY
+          </span>
+          <h1>
+            Paid Picks
+          </h1>
+          <p>
+            Official published
+            recommendations only.
+            Opening this page never
+            recalculates the model.
+          </p>
+        </section>
+
+        {board.picks.length ===
+        0 ? (
+          <section className={styles.empty}>
+            No paid picks have been
+            published for today yet.
+          </section>
+        ) : (
+          <section className={styles.grid}>
+            {board.picks.map(
+              (
+                pick:
+                  PaidPick,
+              ) => (
+                <article
+                  className={styles.card}
+                  key={pick.id}
+                >
+                  <div className={styles.cardTop}>
+                    <span>
+                      #{pick.rank}
+                    </span>
+                    <span>
+                      {pick.resultStatus
+                        .toUpperCase()}
+                    </span>
+                  </div>
+
+                  <small>
+                    {pick.competition}
+                    {" · "}
+                    {kickoff(
+                      pick.kickoffAt,
+                    )}{" "}
+                    SOFIA
+                  </small>
+
+                  <h2>
+                    {pick.home}
+                  </h2>
+                  <div className={styles.vs}>
+                    VS
+                  </div>
+                  <h2>
+                    {pick.away}
+                  </h2>
+
+                  <div className={styles.pick}>
+                    <span>
+                      {pick.market}
+                    </span>
+                    <strong>
+                      {pick.selection}
+                    </strong>
+                  </div>
+
+                  <div className={styles.metrics}>
+                    <div>
+                      <span>
+                        ODDS
+                      </span>
+                      <strong>
+                        {pick.odds.toFixed(
+                          2,
+                        )}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        MODEL
+                      </span>
+                      <strong>
+                        {
+                          pick.modelProbabilityPct
+                        }
+                        %
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        CONF.
+                      </span>
+                      <strong>
+                        {
+                          pick.confidencePct
+                        }
+                        %
+                      </strong>
+                    </div>
+                    <div>
+                      <span>
+                        EDGE
+                      </span>
+                      <strong>
+                        {pick.fairValueEdgePct ===
+                        null
+                          ? "—"
+                          : `${pick.fairValueEdgePct}%`}
+                      </strong>
+                    </div>
+                  </div>
+                </article>
+              ),
+            )}
+          </section>
+        )}
+      </div>
+    </main>
+  );
+}

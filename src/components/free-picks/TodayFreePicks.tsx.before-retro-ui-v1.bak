@@ -1,0 +1,228 @@
+﻿import Link from "next/link";
+import styles from "./TodayFreePicks.module.css";
+
+type Pick = {
+  id: string;
+  date: string;
+  rank: number;
+  fixtureId: number | null;
+  competition: string;
+  country: string | null;
+  kickoffAt: string | null;
+  home: string;
+  away: string;
+  selection: string;
+  modelProbabilityPct: number;
+  confidencePct: number;
+  confidenceBand: "75_plus" | "fallback";
+  odds: number | null;
+  bookmakerName: string | null;
+  oddsSource: "bet365" | "market_median_fallback" | null;
+  resultStatus: "pending" | "won" | "lost" | "void";
+  finalHomeScore: number | null;
+  finalAwayScore: number | null;
+  settledAt: string | null;
+  publishedAt: string;
+};
+
+type Data = {
+  requestedDate: string | null;
+  today: string;
+  displayDate: string;
+  dateMode: "today" | "future" | "past" | "none";
+  picks: Pick[];
+};
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Sofia",
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${date}T12:00:00+03:00`));
+}
+
+function formatKickoff(value: string | null) {
+  if (!value) return "TBC";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Sofia",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));
+}
+
+function statusLabel(status: Pick["resultStatus"]) {
+  if (status === "won") return "WIN";
+  if (status === "lost") return "LOSS";
+  if (status === "void") return "VOID";
+  return "PENDING";
+}
+
+function statusClass(status: Pick["resultStatus"]) {
+  if (status === "won") return styles.statusWon;
+  if (status === "lost") return styles.statusLost;
+  if (status === "void") return styles.statusVoid;
+  return styles.statusPending;
+}
+
+export default function TodayFreePicks({ data }: { data: Data }) {
+  const isFuture = data.dateMode === "future";
+  const title = isFuture ? "Next Free Picks" : "Today's Free Picks";
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.gridOverlay} />
+
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <Link href="/" className={styles.brand}>
+            THE UNDER OVER CLUB
+          </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/today" className={styles.navActive}>
+              PICKS
+            </Link>
+            <Link href="/statistics" className={styles.navLink}>
+              STATS
+            </Link>
+          </nav>
+        </header>
+
+        <section className={styles.hero}>
+          <div>
+            <span className={styles.eyebrow}>FREE PICKS</span>
+            <h1>{title}</h1>
+            <p>
+              Two model-ranked O/U 2.5 selections. Odds never decide which
+              matches make the slate.
+            </p>
+          </div>
+
+          <div className={styles.datePanel}>
+            <span>{isFuture ? "NEXT SLATE" : "TODAY"}</span>
+            <strong>{formatDate(data.displayDate)}</strong>
+          </div>
+        </section>
+
+        {data.picks.length === 0 ? (
+          <section className={styles.empty}>
+            <div className={styles.emptyPixel}>⚽</div>
+            <div>
+              <h2>No Free Picks published yet</h2>
+              <p>The next published slate will appear here automatically.</p>
+            </div>
+          </section>
+        ) : (
+          <section className={styles.pickGrid}>
+            {data.picks.map((pick) => {
+              const score =
+                pick.finalHomeScore !== null && pick.finalAwayScore !== null
+                  ? `${pick.finalHomeScore} - ${pick.finalAwayScore}`
+                  : null;
+
+              return (
+                <article className={styles.pickCard} key={pick.id}>
+                  <div className={styles.pickCardTop}>
+                    <div>
+                      <span className={styles.rank}>PICK #{pick.rank}</span>
+                      <span className={styles.competition}>
+                        {pick.competition}
+                      </span>
+                    </div>
+
+                    <span
+                      className={`${styles.status} ${statusClass(
+                        pick.resultStatus,
+                      )}`}
+                    >
+                      {statusLabel(pick.resultStatus)}
+                    </span>
+                  </div>
+
+                  <div className={styles.fixture}>
+                    <span className={styles.kickoff}>
+                      {formatKickoff(pick.kickoffAt)} SOFIA
+                    </span>
+
+                    <h2>{pick.home}</h2>
+                    <span className={styles.vs}>VS</span>
+                    <h2>{pick.away}</h2>
+
+                    {score ? <div className={styles.finalScore}>{score}</div> : null}
+                  </div>
+
+                  <div className={styles.selection}>
+                    <span>O/U 2.5</span>
+                    <strong>{pick.selection}</strong>
+                  </div>
+
+                  <div className={styles.metrics}>
+                    <div>
+                      <span>MODEL</span>
+                      <strong>{pick.modelProbabilityPct}%</strong>
+                    </div>
+
+                    <div>
+                      <span>CONFIDENCE</span>
+                      <strong>{pick.confidencePct}%</strong>
+                    </div>
+
+                    <div>
+                      <span>ODDS</span>
+                      <strong>
+                        {pick.odds !== null ? pick.odds.toFixed(2) : "—"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className={styles.cardFooter}>
+                    <span>
+                      {pick.odds !== null
+                        ? pick.bookmakerName ?? "Published price"
+                        : "Odds pending"}
+                    </span>
+
+                    <span>
+                      {pick.confidenceBand === "75_plus"
+                        ? "HIGH CONFIDENCE"
+                        : "DAILY FALLBACK"}
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
+
+        <section className={styles.infoStrip}>
+          <div>
+            <span>DAILY TARGET</span>
+            <strong>2 PICKS</strong>
+          </div>
+          <div>
+            <span>MARKET</span>
+            <strong>O/U 2.5</strong>
+          </div>
+          <div>
+            <span>MODEL</span>
+            <strong>OVEREDGE FREE V1</strong>
+          </div>
+        </section>
+
+        <footer className={styles.footer}>
+          <p>
+            Picks are published before kickoff and remain immutable. Results are
+            settled from the official full-time score. Historical performance
+            does not guarantee future results.
+          </p>
+
+          <Link href="/statistics">VIEW PERFORMANCE →</Link>
+        </footer>
+      </div>
+    </main>
+  );
+}

@@ -1,0 +1,95 @@
+﻿import Link from "next/link";
+import type {
+  ReactNode,
+} from "react";
+
+import styles from "./LegalShell.module.css";
+
+type LegalShellProps = {
+  eyebrow: string;
+  title: string;
+  updated: string;
+  children: ReactNode;
+};
+
+export default function LegalShell({
+  eyebrow,
+  title,
+  updated,
+  children,
+}: LegalShellProps) {
+  return (
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <header className={styles.header}>
+          <Link
+            href="/"
+            className={styles.brand}
+          >
+            <span className={styles.brandMark}>
+              UO
+            </span>
+            <span>
+              THE UNDER OVER CLUB
+            </span>
+          </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/today">
+              FREE
+            </Link>
+            <Link href="/paid-picks">
+              PAID PICKS
+            </Link>
+            <Link href="/statistics">
+              STATS
+            </Link>
+            <Link href="/subscription">
+              MEMBERSHIP
+            </Link>
+          </nav>
+        </header>
+
+        <section className={styles.hero}>
+          <span className={styles.eyebrow}>
+            {eyebrow}
+          </span>
+          <h1>{title}</h1>
+          <p>
+            Last updated: {updated}
+          </p>
+        </section>
+
+        <article className={styles.content}>
+          {children}
+        </article>
+
+        <footer className={styles.footer}>
+          <div>
+            <strong>
+              THE UNDER OVER CLUB
+            </strong>
+            <span>
+              Football predictions are not guarantees. Bet responsibly.
+            </span>
+          </div>
+
+          <nav>
+            <Link href="/terms">
+              Terms
+            </Link>
+            <Link href="/privacy">
+              Privacy
+            </Link>
+            <Link href="/responsible-play">
+              Responsible Play
+            </Link>
+            <Link href="/contact">
+              Contact
+            </Link>
+          </nav>
+        </footer>
+      </div>
+    </main>
+  );
+}

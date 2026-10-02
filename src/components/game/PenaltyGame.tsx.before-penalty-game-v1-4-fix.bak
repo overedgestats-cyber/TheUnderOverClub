@@ -1,0 +1,532 @@
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  GAME_PRIZES,
+  SHOT_ZONES,
+  type ShotZone,
+} from "@/lib/game/config";
+
+import styles from "./PenaltyGame.module.css";
+
+type Attempt = {
+  id: string;
+  attemptNumber: number;
+  shotZone: ShotZone;
+  keeperZone: ShotZone;
+  outcome: "goal" | "save";
+  ruleExpDelta: number;
+  appliedExpDelta: number;
+  createdAt: string;
+};
+
+type RankedPlayer = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  exp: number;
+  goals: number;
+  saves: number;
+  shots: number;
+};
+
+type GameState = {
+  date: string;
+  monthKey: string;
+  gameTier: "free" | "premium";
+  dailyLimit: number;
+  attemptsUsed: number;
+  attemptsRemaining: number;
+  attempts: Attempt[];
+  monthly: {
+    exp: number;
+    goals: number;
+    saves: number;
+    shots: number;
+  };
+  lifetime: {
+    exp: number;
+    goals: number;
+    saves: number;
+    shots: number;
+  };
+  leaderboard: {
+    monthKey: string;
+    top: RankedPlayer[];
+    current: RankedPlayer | null;
+  };
+};
+
+type ShotResult = {
+  attemptId: string;
+  attemptNumber: number;
+  shotZone: ShotZone;
+  keeperZone: ShotZone;
+  outcome: "goal" | "save";
+  ruleExpDelta: number;
+  appliedExpDelta: number;
+};
+
+const zoneLabels: Record<ShotZone, string> = {
+  top_left: "TOP LEFT",
+  top_right: "TOP RIGHT",
+  center: "CENTRE",
+  bottom_left: "BOTTOM LEFT",
+  bottom_right: "BOTTOM RIGHT",
+};
+
+function Keeper() {
+  return (
+    <div className={styles.keeper}>
+      <span className={styles.keeperHead} />
+      <span className={styles.keeperTorso} />
+      <span className={styles.keeperArmLeft} />
+      <span className={styles.keeperArmRight} />
+      <span className={styles.keeperLegLeft} />
+      <span className={styles.keeperLegRight} />
+      <span className={styles.keeperBootLeft} />
+      <span className={styles.keeperBootRight} />
+    </div>
+  );
+}
+
+export default function PenaltyGame() {
+  const [state, setState] = useState<GameState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [shooting, setShooting] = useState(false);
+  const [pendingZone, setPendingZone] = useState<ShotZone | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<ShotResult | null>(null);
+
+  const loadState = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/game/state", {
+        cache: "no-store",
+      });
+      const json = await response.json();
+
+      if (!response.ok || !json.ok) {
+        throw new Error(json.error ?? "Could not load game");
+      }
+
+      setState(json.state);
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Could not load game",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadState();
+  }, [loadState]);
+
+  const shoot = async (zone: ShotZone) => {
+    if (shooting || !state || state.attemptsRemaining <= 0) {
+      return;
+    }
+
+    setShooting(true);
+    setPendingZone(zone);
+    setError(null);
+    setLastResult(null);
+
+    try {
+      const response = await fetch("/api/game/shoot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ zone }),
+      });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      const json = contentType.includes("application/json")
+        ? await response.json()
+        : { ok: false, error: await response.text() };
+
+      if (!response.ok || !json.ok) {
+        throw new Error(
+          json.error || `Shot request failed with HTTP ${response.status}`,
+        );
+      }
+
+      const result = json.result as ShotResult;
+      setLastResult(result);
+
+      setState((previous) => {
+        if (!previous) return previous;
+
+        const nextAttempt: Attempt = {
+          id: result.attemptId,
+          attemptNumber: result.attemptNumber,
+          shotZone: result.shotZone,
+          keeperZone: result.keeperZone,
+          outcome: result.outcome,
+          ruleExpDelta: result.ruleExpDelta,
+          appliedExpDelta: result.appliedExpDelta,
+          createdAt: new Date().toISOString(),
+        };
+
+        return {
+          ...previous,
+          gameTier: json.state.gameTier,
+          dailyLimit: json.state.dailyLimit,
+          attemptsUsed: json.state.attemptsUsed,
+          attemptsRemaining: json.state.attemptsRemaining,
+          attempts: [...previous.attempts, nextAttempt],
+          monthly: json.state.monthly,
+          lifetime: json.state.lifetime,
+          leaderboard: json.state.leaderboard,
+        };
+      });
+    } catch (shotError) {
+      setError(
+        shotError instanceof Error
+          ? shotError.message
+          : "Shot failed",
+      );
+    } finally {
+      window.setTimeout(() => {
+        setShooting(false);
+        setPendingZone(null);
+      }, 850);
+    }
+  };
+
+  const keeperClass = lastResult
+    ? styles[`keeper_${lastResult.keeperZone}`]
+    : styles.keeper_center;
+
+  const activeBallZone = pendingZone ?? lastResult?.shotZone ?? null;
+
+  const ballClass = activeBallZone
+    ? styles[`ball_${activeBallZone}`]
+    : styles.ballStart;
+
+  const resultText = useMemo(() => {
+    if (!lastResult) return null;
+
+    if (lastResult.outcome === "goal") {
+      return {
+        title: "GOAL!",
+        detail: `+${lastResult.appliedExpDelta} EXP`,
+        className: styles.resultGoal,
+      };
+    }
+
+    return {
+      title: "SAVED!",
+      detail:
+        lastResult.appliedExpDelta === 0
+          ? "EXP FLOOR: 0"
+          : `${lastResult.appliedExpDelta} EXP`,
+      className: styles.resultSave,
+    };
+  }, [lastResult]);
+
+  if (loading) {
+    return (
+      <div className={styles.loading}>
+        LOADING PENALTY CLUB...
+      </div>
+    );
+  }
+
+  if (error && !state) {
+    return (
+      <div className={styles.loading}>
+        <strong>GAME COULD NOT LOAD</strong>
+        <span>{error}</span>
+        <button type="button" onClick={() => void loadState()}>
+          RETRY
+        </button>
+      </div>
+    );
+  }
+
+  if (!state) return null;
+
+  return (
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div>
+          <span>8-BIT PENALTY CLUB</span>
+          <h1>
+            PICK A CORNER.
+            <br />
+            <b>SCORE. CLIMB.</b>
+          </h1>
+          <p>
+            Five daily shots for free members. Premium subscribers get seven.
+            Goal = +4 EXP. Save = -2 EXP, with EXP never below zero.
+          </p>
+        </div>
+
+        <div className={styles.heroHud}>
+          <div>
+            <span>SHOTS LEFT</span>
+            <strong>
+              {state.attemptsRemaining} / {state.dailyLimit}
+            </strong>
+          </div>
+          <div>
+            <span>MONTH EXP</span>
+            <strong>{state.monthly.exp}</strong>
+          </div>
+          <div>
+            <span>TIER</span>
+            <strong>
+              {state.gameTier === "premium" ? "PREMIUM" : "FREE"}
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      <div className={styles.mainGrid}>
+        <section className={styles.gamePanel}>
+          <div className={styles.panelTitle}>
+            <div>
+              <span>●</span>
+              <h2>PENALTY SHOOTOUT</h2>
+            </div>
+
+            <strong>
+              ATTEMPT{" "}
+              {Math.min(state.attemptsUsed + 1, state.dailyLimit)}
+              /{state.dailyLimit}
+            </strong>
+          </div>
+
+          <div className={styles.scene}>
+            <div className={styles.skyGlow} />
+
+            <div className={styles.crowd}>
+              <div className={styles.crowdPixels}>
+                ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪
+              </div>
+              <div className={styles.adverts}>
+                <span>UNDER OVER CLUB</span>
+                <span>STATS. GOALS. PROFIT.</span>
+                <span>DATA BEATS GUT.</span>
+              </div>
+            </div>
+
+            <div className={styles.pitch}>
+              <div className={styles.goal}>
+                <div className={styles.net} />
+
+                {SHOT_ZONES.map((zone) => (
+                  <button
+                    key={zone}
+                    type="button"
+                    className={`${styles.zone} ${styles[`zone_${zone}`]}`}
+                    disabled={shooting || state.attemptsRemaining <= 0}
+                    onClick={() => void shoot(zone)}
+                    aria-label={`Shoot ${zoneLabels[zone]}`}
+                  >
+                    <span>{zoneLabels[zone]}</span>
+                  </button>
+                ))}
+
+                <div
+                  className={`${styles.keeperWrap} ${keeperClass}`}
+                  aria-hidden="true"
+                >
+                  <Keeper />
+                </div>
+              </div>
+
+              <div className={styles.penaltyMark} />
+              <div className={styles.cameraLane} />
+
+              <div
+                className={`${styles.ball} ${ballClass} ${
+                  shooting || lastResult ? styles.ballActive : ""
+                }`}
+                aria-hidden="true"
+              >
+                <span className={styles.ballPatchA} />
+                <span className={styles.ballPatchB} />
+                <span className={styles.ballPatchC} />
+                <span className={styles.ballPatchD} />
+                <span className={styles.ballPatchE} />
+              </div>
+
+              <div className={styles.swipeText}>
+                {shooting
+                  ? "SHOT IN PROGRESS..."
+                  : state.attemptsRemaining > 0
+                    ? "CLICK A TARGET TO SHOOT"
+                    : "DAILY SHOOTOUT COMPLETE"}
+              </div>
+            </div>
+          </div>
+
+          {resultText ? (
+            <div
+              className={`${styles.resultBanner} ${resultText.className}`}
+            >
+              <strong>{resultText.title}</strong>
+              <span>{resultText.detail}</span>
+              <small>
+                SHOT: {zoneLabels[lastResult!.shotZone]} / KEEPER:{" "}
+                {zoneLabels[lastResult!.keeperZone]}
+              </small>
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className={styles.error}>
+              <strong>SHOT ERROR</strong>
+              <span>{error}</span>
+            </div>
+          ) : null}
+
+          <div className={styles.attemptStrip}>
+            {Array.from({ length: state.dailyLimit }, (_, index) => {
+              const attempt = state.attempts[index];
+
+              return (
+                <div
+                  key={index}
+                  className={
+                    attempt
+                      ? attempt.outcome === "goal"
+                        ? styles.attemptGoal
+                        : styles.attemptSave
+                      : styles.attemptPending
+                  }
+                >
+                  <span>#{index + 1}</span>
+                  <strong>
+                    {attempt
+                      ? attempt.outcome === "goal"
+                        ? "GOAL"
+                        : "SAVE"
+                      : "—"}
+                  </strong>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <aside className={styles.sideRail}>
+          <article className={styles.card}>
+            <span>YOUR MONTH</span>
+            <div className={styles.stats}>
+              <div>
+                <small>EXP</small>
+                <strong>{state.monthly.exp}</strong>
+              </div>
+              <div>
+                <small>GOALS</small>
+                <strong>{state.monthly.goals}</strong>
+              </div>
+              <div>
+                <small>SAVES</small>
+                <strong>{state.monthly.saves}</strong>
+              </div>
+              <div>
+                <small>RANK</small>
+                <strong>{state.leaderboard.current?.rank ?? "—"}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className={styles.card}>
+            <span>SCORING</span>
+            <div className={styles.rules}>
+              <p>
+                <b>GOAL</b>
+                <strong>+4 EXP</strong>
+              </p>
+              <p>
+                <b>SAVE</b>
+                <strong>-2 EXP</strong>
+              </p>
+              <p>
+                <b>EXP FLOOR</b>
+                <strong>0</strong>
+              </p>
+            </div>
+          </article>
+
+          <article className={styles.card}>
+            <span>MONTHLY PRIZES</span>
+            <div className={styles.prizes}>
+              {GAME_PRIZES.map((prize) => (
+                <div key={prize.place}>
+                  <strong>{prize.label}</strong>
+                  <span>{prize.prize}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        </aside>
+      </div>
+
+      <section className={styles.leaderboard}>
+        <div className={styles.panelTitle}>
+          <div>
+            <span>★</span>
+            <h2>MONTHLY LEADERBOARD</h2>
+          </div>
+          <strong>{state.monthKey}</strong>
+        </div>
+
+        <div className={styles.table}>
+          <div className={styles.tableHead}>
+            <span>#</span>
+            <span>PLAYER</span>
+            <span>EXP</span>
+            <span>GOALS</span>
+            <span>SHOTS</span>
+          </div>
+
+          {state.leaderboard.top.length > 0 ? (
+            state.leaderboard.top.map((player) => (
+              <div
+                key={player.userId}
+                className={
+                  player.userId === state.leaderboard.current?.userId
+                    ? styles.currentPlayer
+                    : ""
+                }
+              >
+                <strong>{player.rank}</strong>
+                <span>{player.displayName}</span>
+                <b>{player.exp}</b>
+                <span>{player.goals}</span>
+                <span>{player.shots}</span>
+              </div>
+            ))
+          ) : (
+            <div className={styles.noPlayers}>
+              TAKE THE FIRST PENALTY OF THE MONTH.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className={styles.disclaimer}>
+        The Penalty Club is an entertainment feature. It has no cash value and
+        does not affect football-pick selection or betting results.
+      </div>
+    </div>
+  );
+}

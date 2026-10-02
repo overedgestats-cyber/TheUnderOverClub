@@ -1,0 +1,86 @@
+.banner {
+  position: fixed;
+  z-index: 1000;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  border: 2px solid #7acb2d;
+  background: #060806;
+  box-shadow: 6px 6px 0 #000;
+  color: #f4f0df;
+  font-family: "Courier New", monospace;
+}
+
+.banner strong {
+  color: #f6c93b;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.banner p {
+  max-width: 680px;
+  margin: 7px 0 5px;
+  color: #a9aea8;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.banner a {
+  color: #7acb2d;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.actions button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 2px solid;
+  border-radius: 0;
+  background: #151815;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.reject {
+  border-color: #646b66 !important;
+  color: #d4d7d3;
+}
+
+.accept {
+  border-color: #7acb2d !important;
+  background: #143309 !important;
+  color: #8ef044;
+}
+
+@media (max-width: 720px) {
+  .banner {
+    left: 8px;
+    right: 8px;
+    bottom: 78px;
+    display: grid;
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

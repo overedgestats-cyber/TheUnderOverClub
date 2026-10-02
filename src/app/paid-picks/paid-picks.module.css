@@ -1,0 +1,2 @@
+.page { display: grid; gap: 8px; }
+.gold { color: var(--retro-yellow); }

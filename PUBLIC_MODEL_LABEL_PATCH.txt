@@ -1,0 +1,9 @@
+﻿On the public /today page, change the internal-facing label:
+
+OVEREDGE FREE V1
+
+to:
+
+CLUB MODEL
+
+Keep the database/model_version value "overedge-free-v1" unchanged internally.

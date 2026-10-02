@@ -1,0 +1,499 @@
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  GAME_PRIZES,
+  SHOT_ZONES,
+  type ShotZone,
+} from "@/lib/game/config";
+
+import styles from "./PenaltyGame.module.css";
+
+type Attempt = {
+  id: string;
+  attemptNumber: number;
+  shotZone: ShotZone;
+  keeperZone: ShotZone;
+  outcome: "goal" | "save";
+  ruleExpDelta: number;
+  appliedExpDelta: number;
+  createdAt: string;
+};
+
+type RankedPlayer = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  exp: number;
+  goals: number;
+  saves: number;
+  shots: number;
+};
+
+type GameState = {
+  date: string;
+  monthKey: string;
+  gameTier: "free" | "premium";
+  dailyLimit: number;
+  attemptsUsed: number;
+  attemptsRemaining: number;
+  attempts: Attempt[];
+  monthly: {
+    exp: number;
+    goals: number;
+    saves: number;
+    shots: number;
+  };
+  lifetime: {
+    exp: number;
+    goals: number;
+    saves: number;
+    shots: number;
+  };
+  leaderboard: {
+    monthKey: string;
+    top: RankedPlayer[];
+    current: RankedPlayer | null;
+  };
+};
+
+type ShotResult = {
+  attemptId: string;
+  attemptNumber: number;
+  shotZone: ShotZone;
+  keeperZone: ShotZone;
+  outcome: "goal" | "save";
+  ruleExpDelta: number;
+  appliedExpDelta: number;
+};
+
+const zoneLabels: Record<ShotZone, string> = {
+  top_left: "TOP LEFT",
+  top_right: "TOP RIGHT",
+  center: "CENTRE",
+  bottom_left: "BOTTOM LEFT",
+  bottom_right: "BOTTOM RIGHT",
+};
+
+function Keeper() {
+  return (
+    <div className={styles.keeper}>
+      <span className={styles.keeperHair} />
+      <span className={styles.keeperHead} />
+      <span className={styles.keeperBody} />
+      <span className={styles.keeperArmLeft} />
+      <span className={styles.keeperArmRight} />
+      <span className={styles.keeperShorts} />
+      <span className={styles.keeperLegLeft} />
+      <span className={styles.keeperLegRight} />
+      <span className={styles.keeperBootLeft} />
+      <span className={styles.keeperBootRight} />
+    </div>
+  );
+}
+
+function PixelBall() {
+  return (
+    <>
+      <span className={styles.ballPatchCenter} />
+      <span className={styles.ballPatchOne} />
+      <span className={styles.ballPatchTwo} />
+      <span className={styles.ballPatchThree} />
+      <span className={styles.ballPatchFour} />
+    </>
+  );
+}
+
+export default function PenaltyGame() {
+  const [state, setState] = useState<GameState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [shooting, setShooting] = useState(false);
+  const [pendingZone, setPendingZone] = useState<ShotZone | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<ShotResult | null>(null);
+
+  const loadState = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/game/state", { cache: "no-store" });
+      const json = await response.json();
+
+      if (!response.ok || !json.ok) {
+        throw new Error(json.error ?? "Could not load game");
+      }
+
+      setState(json.state);
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error ? loadError.message : "Could not load game",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadState();
+  }, [loadState]);
+
+  const shoot = async (zone: ShotZone) => {
+    if (shooting || !state || state.attemptsRemaining <= 0) return;
+
+    setShooting(true);
+    setPendingZone(zone);
+    setLastResult(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/game/shoot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zone }),
+      });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      const json = contentType.includes("application/json")
+        ? await response.json()
+        : { ok: false, error: await response.text() };
+
+      if (!response.ok || !json.ok) {
+        throw new Error(
+          json.error || `Shot request failed with HTTP ${response.status}`,
+        );
+      }
+
+      const result = json.result as ShotResult;
+      setLastResult(result);
+
+      setState((previous) => {
+        if (!previous) return previous;
+
+        const nextAttempt: Attempt = {
+          id: result.attemptId,
+          attemptNumber: result.attemptNumber,
+          shotZone: result.shotZone,
+          keeperZone: result.keeperZone,
+          outcome: result.outcome,
+          ruleExpDelta: result.ruleExpDelta,
+          appliedExpDelta: result.appliedExpDelta,
+          createdAt: new Date().toISOString(),
+        };
+
+        return {
+          ...previous,
+          gameTier: json.state.gameTier,
+          dailyLimit: json.state.dailyLimit,
+          attemptsUsed: json.state.attemptsUsed,
+          attemptsRemaining: json.state.attemptsRemaining,
+          attempts: [...previous.attempts, nextAttempt],
+          monthly: json.state.monthly,
+          lifetime: json.state.lifetime,
+          leaderboard: json.state.leaderboard,
+        };
+      });
+    } catch (shotError) {
+      setError(
+        shotError instanceof Error ? shotError.message : "Shot failed",
+      );
+    } finally {
+      window.setTimeout(() => {
+        setShooting(false);
+        setPendingZone(null);
+      }, 900);
+    }
+  };
+
+  const visualShotZone = pendingZone ?? lastResult?.shotZone ?? null;
+
+  const ballClass = visualShotZone
+    ? styles[`ball_${visualShotZone}`]
+    : styles.ballStart;
+
+  const keeperClass = lastResult
+    ? styles[`keeper_${lastResult.keeperZone}`]
+    : styles.keeper_center;
+
+  const resultText = useMemo(() => {
+    if (!lastResult) return null;
+
+    return lastResult.outcome === "goal"
+      ? {
+          title: "GOAL!",
+          detail: `+${lastResult.appliedExpDelta} EXP`,
+          className: styles.resultGoal,
+        }
+      : {
+          title: "SAVED!",
+          detail:
+            lastResult.appliedExpDelta === 0
+              ? "EXP FLOOR: 0"
+              : `${lastResult.appliedExpDelta} EXP`,
+          className: styles.resultSave,
+        };
+  }, [lastResult]);
+
+  if (loading) {
+    return <div className={styles.loading}>LOADING PENALTY CLUB...</div>;
+  }
+
+  if (!state) {
+    return (
+      <div className={styles.loading}>
+        <strong>GAME COULD NOT LOAD</strong>
+        <span>{error ?? "Unknown error"}</span>
+        <button type="button" onClick={() => void loadState()}>
+          RETRY
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.gameLayout}>
+        <main className={styles.mainColumn}>
+          <section className={styles.gamePanel}>
+            <div className={styles.topBar}>
+              <div>
+                <span className={styles.ballIcon} aria-hidden="true">●</span>
+                <strong>PENALTY SHOOTOUT</strong>
+              </div>
+              <span>
+                ATTEMPT{" "}
+                {state.attemptsRemaining > 0
+                  ? Math.min(state.attemptsUsed + 1, state.dailyLimit)
+                  : state.dailyLimit}
+                /{state.dailyLimit}
+              </span>
+            </div>
+
+            <div className={styles.scene}>
+              <div className={styles.nightSky} />
+              <div className={styles.floodlightLeft}>
+                {Array.from({ length: 16 }, (_, index) => (
+                  <i key={index} />
+                ))}
+              </div>
+              <div className={styles.floodlightRight}>
+                {Array.from({ length: 16 }, (_, index) => (
+                  <i key={index} />
+                ))}
+              </div>
+
+              <div className={styles.upperCrowd}>
+                <span>▪ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪</span>
+                <span>▫ ▪ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫</span>
+              </div>
+
+              <div className={styles.bannerRow}>
+                <div className={styles.bannerBlue}>
+                  <span>⚽</span>
+                  <strong>FOOTBALL BANNERS</strong>
+                </div>
+                <div className={styles.bannerRed}>
+                  <strong>STATS.GOALS.PROFIT.</strong>
+                </div>
+                <div className={styles.bannerBlue}>
+                  <span>★</span>
+                  <strong>THE UNDER OVER CLUB</strong>
+                </div>
+              </div>
+
+              <div className={styles.lowerCrowd}>
+                <div className={styles.lowerCrowdDots}>
+                  ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫ ▪ ▪ ▫ ▪ ▫
+                </div>
+                <div className={styles.pitchSideBoards}>
+                  <span>STATS.</span>
+                  <span>GOALS.</span>
+                  <span>THE UNDER OVER CLUB</span>
+                  <span>PROFIT.</span>
+                </div>
+              </div>
+
+              <div className={styles.pitch}>
+                <div className={styles.penaltyBoxLine} />
+                <div className={styles.sixYardLine} />
+                <div className={styles.penaltySpot} />
+
+                <div className={styles.goal}>
+                  <div className={styles.net} />
+
+                  {SHOT_ZONES.map((zone) => (
+                    <button
+                      key={zone}
+                      type="button"
+                      className={`${styles.target} ${styles[`target_${zone}`]}`}
+                      disabled={shooting || state.attemptsRemaining <= 0}
+                      onClick={() => void shoot(zone)}
+                      aria-label={`Shoot ${zoneLabels[zone]}`}
+                    >
+                      <span>{zoneLabels[zone]}</span>
+                    </button>
+                  ))}
+
+                  <div
+                    className={`${styles.keeperWrap} ${keeperClass}`}
+                    aria-hidden="true"
+                  >
+                    <Keeper />
+                  </div>
+                </div>
+
+                <div
+                  className={`${styles.ball} ${ballClass}`}
+                  aria-hidden="true"
+                >
+                  <PixelBall />
+                </div>
+
+                <div className={styles.actionPrompt}>
+                  {shooting
+                    ? "SHOT IN PROGRESS..."
+                    : state.attemptsRemaining > 0
+                      ? "CLICK A TARGET TO SHOOT"
+                      : "DAILY SHOOTOUT COMPLETE"}
+                </div>
+              </div>
+            </div>
+
+            {resultText ? (
+              <div className={`${styles.result} ${resultText.className}`}>
+                <div>
+                  <span className={styles.resultBall}>●</span>
+                  <strong>{resultText.title}</strong>
+                  <b>{resultText.detail}</b>
+                </div>
+                <span>
+                  SHOT {zoneLabels[lastResult!.shotZone]} · KEEPER{" "}
+                  {zoneLabels[lastResult!.keeperZone]}
+                </span>
+              </div>
+            ) : null}
+
+            {error ? (
+              <div className={styles.error}>
+                <strong>SHOT ERROR</strong>
+                <span>{error}</span>
+              </div>
+            ) : null}
+
+            <div className={styles.attempts}>
+              {Array.from({ length: state.dailyLimit }, (_, index) => {
+                const attempt = state.attempts[index];
+
+                return (
+                  <div
+                    key={index}
+                    className={
+                      attempt
+                        ? attempt.outcome === "goal"
+                          ? styles.attemptGoal
+                          : styles.attemptSave
+                        : styles.attemptPending
+                    }
+                  >
+                    <span>#{index + 1}</span>
+                    <strong>
+                      {attempt
+                        ? attempt.outcome === "goal"
+                          ? "GOAL"
+                          : "SAVE"
+                        : "—"}
+                    </strong>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className={styles.leaderboard}>
+            <div className={styles.sectionTitle}>
+              <strong>MONTHLY LEADERBOARD</strong>
+              <span>{state.monthKey}</span>
+            </div>
+
+            <div className={styles.table}>
+              <div className={styles.tableHead}>
+                <span>#</span>
+                <span>PLAYER</span>
+                <span>EXP</span>
+                <span>GOALS</span>
+                <span>SAVES</span>
+                <span>SHOTS</span>
+              </div>
+
+              {state.leaderboard.top.map((player) => (
+                <div
+                  key={player.userId}
+                  className={
+                    player.userId === state.leaderboard.current?.userId
+                      ? styles.currentPlayer
+                      : undefined
+                  }
+                >
+                  <strong>{player.rank}</strong>
+                  <span>{player.displayName}</span>
+                  <b>{player.exp}</b>
+                  <span>{player.goals}</span>
+                  <span>{player.saves}</span>
+                  <span>{player.shots}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        <aside className={styles.sideRail}>
+          <article className={styles.card}>
+            <span>YOUR MONTH</span>
+            <div className={styles.statGrid}>
+              <div><small>EXP</small><strong>{state.monthly.exp}</strong></div>
+              <div><small>GOALS</small><strong>{state.monthly.goals}</strong></div>
+              <div><small>SAVES</small><strong>{state.monthly.saves}</strong></div>
+              <div><small>SHOTS</small><strong>{state.monthly.shots}</strong></div>
+              <div className={styles.rankCell}>
+                <small>RANK</small>
+                <strong>{state.leaderboard.current?.rank ?? "—"}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className={styles.card}>
+            <span>SCORING</span>
+            <div className={styles.rules}>
+              <p><b>GOAL</b><strong>+4 EXP</strong></p>
+              <p><b>SAVE</b><strong>-2 EXP</strong></p>
+              <p><b>EXP FLOOR</b><strong>0</strong></p>
+            </div>
+          </article>
+
+          <article className={styles.card}>
+            <span>MONTHLY PRIZES</span>
+            <div className={styles.prizes}>
+              {GAME_PRIZES.map((prize) => (
+                <div key={prize.place}>
+                  <strong>{prize.label}</strong>
+                  <span>{prize.prize}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        </aside>
+      </div>
+
+      <div className={styles.disclaimer}>
+        Entertainment feature only. No cash value. Does not affect football-pick
+        selection or betting results.
+      </div>
+    </div>
+  );
+}

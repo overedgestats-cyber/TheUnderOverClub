@@ -1,0 +1,224 @@
+.page { display: grid; gap: 8px; }
+.gold { color: var(--retro-yellow); }
+
+.notice {
+  padding: 14px;
+  border: 3px solid #765b16;
+  background: #171305;
+  color: var(--retro-yellow);
+  font-size: 9px;
+  font-weight: 900;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.plan {
+  --plan: var(--retro-green);
+  position: relative;
+  min-width: 0;
+  padding: 18px 16px 16px;
+  border: 3px solid var(--plan);
+  background: linear-gradient(180deg, #070a0d, #050708);
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.daily { --plan: var(--retro-green); }
+.weekly { --plan: var(--retro-blue); }
+.monthly { --plan: var(--retro-yellow); }
+.yearly { --plan: var(--retro-purple); }
+
+.badge {
+  position: absolute;
+  top: -13px;
+  right: 12px;
+  padding: 6px 8px;
+  border: 2px solid var(--plan);
+  background: #050708;
+  color: var(--plan);
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.planName {
+  display: block;
+  color: var(--plan);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.plan h2 {
+  margin: 13px 0 6px;
+  color: var(--plan);
+  font-size: clamp(27px, 3vw, 39px);
+  text-align: center;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.plan p {
+  min-height: 52px;
+  color: #848b92;
+  font-size: 8px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.plan ul {
+  min-height: 120px;
+  margin: 15px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan li {
+  position: relative;
+  margin: 9px 0;
+  padding-left: 16px;
+  color: #b0b5b9;
+  font-size: 7px;
+  line-height: 1.4;
+}
+
+.plan li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--plan);
+  font-weight: 900;
+}
+
+.plan form,
+.button { display: block; }
+
+.plan button,
+.button {
+  width: 100%;
+  min-height: 44px;
+  border: 2px solid var(--plan);
+  background: #111519;
+  color: var(--plan);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  line-height: 40px;
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.45), 3px 3px 0 #000;
+}
+
+.slot {
+  display: block;
+  margin-top: 9px;
+  color: #4f565e;
+  font-size: 6px;
+  text-align: center;
+}
+
+.lowerGrid {
+  display: grid;
+  grid-template-columns: 1.7fr 0.8fr;
+  gap: 8px;
+}
+
+.features,
+.checkoutPanel {
+  border: 3px solid var(--retro-line);
+  background: #06090c;
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-bottom: 2px solid var(--retro-line-soft);
+}
+
+.sectionTitle span,
+.sectionTitle h2 { color: var(--retro-yellow); }
+
+.sectionTitle h2 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.featureRows > div {
+  display: grid;
+  grid-template-columns: 1fr 80px 90px;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #20252a;
+}
+
+.featureRows > div:first-child {
+  color: #7e858d;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.featureRows strong,
+.featureRows p {
+  margin: 0;
+  color: #b8bcc0;
+  font-size: 8px;
+}
+
+.featureRows span,
+.featureRows b { text-align: center; }
+
+.featureRows span { color: var(--retro-red); }
+.featureRows b { color: var(--retro-green-bright); }
+
+.checkoutPanel {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.trophy {
+  color: var(--retro-yellow);
+  font-size: 57px;
+  text-shadow: 4px 4px 0 #7f4d00;
+}
+
+.checkoutPanel > strong {
+  margin-top: 9px;
+  color: var(--retro-yellow);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.checkoutPanel p {
+  color: #7f878e;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.secure {
+  margin-top: 10px;
+  color: #737b83;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .planGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .planGrid,
+  .lowerGrid { grid-template-columns: 1fr; }
+
+  .plan ul,
+  .plan p { min-height: auto; }
+}

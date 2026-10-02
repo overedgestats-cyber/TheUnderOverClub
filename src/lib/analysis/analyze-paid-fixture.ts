@@ -1,0 +1,301 @@
+﻿import "server-only";
+
+import {
+  getHeadToHeadFixtures,
+  getOddsForFixture,
+  getRecentTeamFixtures,
+} from "@/lib/api-football/client";
+import { calculateHeadToHeadSummary } from "@/lib/analysis/head-to-head";
+import { round } from "@/lib/analysis/math";
+import { buildConsensusOdds } from "@/lib/analysis/odds";
+import { calculateMatchProbabilities } from "@/lib/analysis/poisson";
+import { buildRecommendationCandidates } from "@/lib/analysis/recommendations";
+import { analyzeTeamForm } from "@/lib/analysis/team-form";
+import { buildPaidV3Shadow } from "@/lib/analysis/shadow-v3";
+import { buildPaidV3bShadow } from "@/lib/analysis/shadow-v3b";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+
+type FixtureRow = {
+  id: string;
+  provider_fixture_id: number;
+  kickoff_at: string;
+  competition_name: string;
+  competition_country: string | null;
+  home_team_id: number;
+  home_team_name: string;
+  away_team_id: number;
+  away_team_name: string;
+  status: string;
+};
+
+async function getFixture(
+  providerFixtureId?: number,
+): Promise<FixtureRow> {
+  const supabase =
+    createAdminSupabaseClient();
+
+  if (providerFixtureId) {
+    const { data, error } = await supabase
+      .from("fixtures")
+      .select(
+        [
+          "id",
+          "provider_fixture_id",
+          "kickoff_at",
+          "competition_name",
+          "competition_country",
+          "home_team_id",
+          "home_team_name",
+          "away_team_id",
+          "away_team_name",
+          "status",
+        ].join(","),
+      )
+      .eq(
+        "provider_fixture_id",
+        providerFixtureId,
+      )
+      .single();
+
+    if (error) {
+      throw new Error(
+        `Could not find fixture ${providerFixtureId}: ${error.message}`,
+      );
+    }
+
+    return data as unknown as FixtureRow;
+  }
+
+  const { data: futureFixture } =
+    await supabase
+      .from("fixtures")
+      .select(
+        [
+          "id",
+          "provider_fixture_id",
+          "kickoff_at",
+          "competition_name",
+          "competition_country",
+          "home_team_id",
+          "home_team_name",
+          "away_team_id",
+          "away_team_name",
+          "status",
+        ].join(","),
+      )
+      .eq("is_paid_scope", true)
+      .gte(
+        "kickoff_at",
+        new Date().toISOString(),
+      )
+      .order("kickoff_at", {
+        ascending: true,
+      })
+      .limit(1)
+      .maybeSingle();
+
+  if (futureFixture) {
+    return futureFixture as unknown as FixtureRow;
+  }
+
+  const { data, error } = await supabase
+    .from("fixtures")
+    .select(
+      [
+        "id",
+        "provider_fixture_id",
+        "kickoff_at",
+        "competition_name",
+        "competition_country",
+        "home_team_id",
+        "home_team_name",
+        "away_team_id",
+        "away_team_name",
+        "status",
+      ].join(","),
+    )
+    .eq("is_paid_scope", true)
+    .order("kickoff_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .single();
+
+  if (error) {
+    throw new Error(
+      `Could not select a paid fixture: ${error.message}`,
+    );
+  }
+
+  return data as unknown as FixtureRow;
+}
+
+export async function analyzePaidFixture(
+  providerFixtureId?: number,
+) {
+  const fixture =
+    await getFixture(providerFixtureId);
+
+  const [
+    homeHistory,
+    awayHistory,
+    headToHeadFixtures,
+    oddsResponse,
+  ] = await Promise.all([
+    getRecentTeamFixtures(
+      fixture.home_team_id,
+      24,
+    ),
+    getRecentTeamFixtures(
+      fixture.away_team_id,
+      24,
+    ),
+    getHeadToHeadFixtures(
+      fixture.home_team_id,
+      fixture.away_team_id,
+      8,
+    ),
+    getOddsForFixture(
+      fixture.provider_fixture_id,
+    ),
+  ]);
+
+  const home = analyzeTeamForm({
+    fixtures: homeHistory,
+    teamId: fixture.home_team_id,
+    teamName: fixture.home_team_name,
+    targetFixtureId:
+      fixture.provider_fixture_id,
+    targetKickoff:
+      fixture.kickoff_at,
+    venue: "home",
+  });
+
+  const away = analyzeTeamForm({
+    fixtures: awayHistory,
+    teamId: fixture.away_team_id,
+    teamName: fixture.away_team_name,
+    targetFixtureId:
+      fixture.provider_fixture_id,
+    targetKickoff:
+      fixture.kickoff_at,
+    venue: "away",
+  });
+
+  const headToHead =
+    calculateHeadToHeadSummary({
+      fixtures: headToHeadFixtures,
+      homeTeamId:
+        fixture.home_team_id,
+      targetFixtureId:
+        fixture.provider_fixture_id,
+      targetKickoff:
+        fixture.kickoff_at,
+    });
+
+  const {
+    expectedGoals,
+    probabilities,
+    components,
+  } = calculateMatchProbabilities(
+    home,
+    away,
+  );
+
+  const consensusOdds =
+    buildConsensusOdds(oddsResponse);
+
+  const shadowV3 =
+    buildPaidV3Shadow({
+      homeHistory,
+      awayHistory,
+      homeTeamId:
+        fixture.home_team_id,
+      awayTeamId:
+        fixture.away_team_id,
+      targetFixtureId:
+        fixture.provider_fixture_id,
+      targetKickoff:
+        fixture.kickoff_at,
+      consensusOdds,
+    });
+
+  const shadowV3b =
+    await buildPaidV3bShadow({
+      homeHistory,
+      awayHistory,
+      homeTeamId:
+        fixture.home_team_id,
+      awayTeamId:
+        fixture.away_team_id,
+      targetFixtureId:
+        fixture.provider_fixture_id,
+      targetKickoff:
+        fixture.kickoff_at,
+      targetCompetitionName:
+        fixture.competition_name,
+      targetCompetitionCountry:
+        fixture.competition_country,
+      consensusOdds,
+    });
+
+  const dataQuality = round(
+    (
+      home.dataQuality +
+      away.dataQuality
+    ) / 2,
+  );
+
+  const recommendations =
+    buildRecommendationCandidates({
+      probabilities,
+      components,
+      consensusOdds,
+      dataQuality,
+      home,
+      away,
+      headToHead,
+    });
+
+  return {
+    fixture,
+    model: {
+      version:
+        "paid-confidence-v2",
+      sampleMatches: 12,
+      expectedGoalsType:
+        "internal statistical estimate",
+      minimumConfidence: 0.75,
+      minimumValueEdge: 0.05,
+      minimumDataQuality: 0.65,
+      confidenceWeights: {
+        dataQuality: 0.35,
+        modelAgreement: 0.35,
+        formConsistency: 0.25,
+        headToHeadSupport: 0.05,
+      },
+      bookmakerProbability:
+        "de-vigged median market where possible",
+      oddsSource:
+        "median of available non-Bet365 bookmakers",
+    },
+    home,
+    away,
+    headToHead,
+    expectedGoals,
+    probabilities,
+    probabilityComponents:
+      components,
+    shadowV3,
+    shadowV3b,
+    consensusOdds,
+    recommendations,
+    qualifyingRecommendations:
+      recommendations
+        .filter(
+          (recommendation) =>
+            recommendation.qualifies,
+        )
+        .slice(0, 3),
+  };
+}

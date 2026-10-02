@@ -1,0 +1,942 @@
+﻿import "server-only";
+
+import { analyzePaidFixture } from "@/lib/analysis/analyze-paid-fixture";
+import { getSofiaDate } from "@/lib/time/sofia";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import type {
+  MarketKey,
+  RecommendationCandidate,
+} from "@/lib/analysis/types";
+
+const REQUIRED_MARKETS: MarketKey[] = [
+  "ou25",
+  "btts",
+  "one_x_two",
+  "double_chance",
+];
+
+type PublicationRunRow = {
+  id: string;
+  publication_date: string;
+  published_at: string | null;
+  status: string;
+};
+
+type BoardFixtureRow = {
+  fixture_id: string;
+};
+
+type FixtureRow = {
+  id: string;
+  provider_fixture_id: number;
+  kickoff_at: string;
+  competition_name: string;
+  home_team_name: string;
+  away_team_name: string;
+};
+
+type ExistingSnapshotRow = {
+  publication_run_id: string;
+  fixture_id: string;
+  market: MarketKey;
+  selection: string;
+  bookmaker_id: number | null;
+  bookmaker_name: string | null;
+  odds: number | null;
+  odds_source: "bet365" | "market_median_fallback" | null;
+  odds_fetched_at: string | null;
+  model_probability: number;
+  fair_bookmaker_probability: number | null;
+  fair_probability_source:
+    | "devigged_binary_market"
+    | "devigged_1x2_market"
+    | "devigged_1x2_derived"
+    | "raw_implied_fallback"
+    | null;
+  confidence: number;
+  data_quality_score: number | null;
+  qualifies: boolean;
+  official_rank_position: number | null;
+  rejection_reasons: string[];
+  model_version: string;
+  analysis_snapshot: Record<string, unknown>;
+  published_at: string;
+};
+
+function adminDb() {
+  // The current project intentionally does not yet use generated Supabase
+  // database types. Keep the cast local to this server-only storage module.
+  return createAdminSupabaseClient() as any;
+}
+
+function assertFourMarkets(
+  candidates: RecommendationCandidate[],
+) {
+  if (candidates.length !== 4) {
+    throw new Error(
+      `Expected 4 strongest market candidates, received ${candidates.length}`,
+    );
+  }
+
+  const markets = new Set(
+    candidates.map(
+      (candidate) => candidate.market,
+    ),
+  );
+
+  for (const market of REQUIRED_MARKETS) {
+    if (!markets.has(market)) {
+      throw new Error(
+        `Missing required tracked market: ${market}`,
+      );
+    }
+  }
+}
+
+function oddsMetadata(
+  analysis: Awaited<
+    ReturnType<typeof analyzePaidFixture>
+  >,
+  candidate: RecommendationCandidate,
+) {
+  const odd = analysis.consensusOdds.find(
+    (item) =>
+      item.market === candidate.market &&
+      item.selection === candidate.selection,
+  );
+
+  if (!odd) {
+    return {
+      bookmakerId: null,
+      bookmakerName: null,
+      oddsSource: null,
+    };
+  }
+
+  if (odd.source === "bet365") {
+    return {
+      bookmakerId: 8,
+      bookmakerName: "Bet365",
+      oddsSource: "bet365" as const,
+    };
+  }
+
+  return {
+    bookmakerId: null,
+    bookmakerName:
+      "Market median fallback",
+    oddsSource:
+      "market_median_fallback" as const,
+  };
+}
+
+function officialRanks(
+  candidates: RecommendationCandidate[],
+) {
+  const qualifying = candidates
+    .filter(
+      (candidate) => candidate.qualifies,
+    )
+    .slice(0, 3);
+
+  return new Map(
+    qualifying.map(
+      (candidate, index) => [
+        `${candidate.market}:${candidate.selection}`,
+        index + 1,
+      ],
+    ),
+  );
+}
+
+function snapshotReasoning(
+  candidate: RecommendationCandidate,
+) {
+  if (candidate.qualifies) {
+    return [
+      `Thresholds passed.`,
+      `Confidence ${(candidate.confidence * 100).toFixed(2)}%.`,
+      candidate.valueEdge === null
+        ? "Fair value edge unavailable."
+        : `Fair value edge ${(candidate.valueEdge * 100).toFixed(2)} percentage points.`,
+    ].join(" ");
+  }
+
+  return candidate.rejectionReasons.join(
+    "; ",
+  );
+}
+
+async function getPaidScopeFixturesForDate(
+  date: string,
+): Promise<FixtureRow[]> {
+  const db = adminDb();
+
+  const from = new Date(
+    `${date}T00:00:00Z`,
+  );
+  from.setUTCDate(
+    from.getUTCDate() - 1,
+  );
+
+  const to = new Date(
+    `${date}T00:00:00Z`,
+  );
+  to.setUTCDate(
+    to.getUTCDate() + 2,
+  );
+
+  const { data, error } = await db
+    .from("fixtures")
+    .select(
+      "id,provider_fixture_id,kickoff_at,competition_name,home_team_name,away_team_name",
+    )
+    .eq("is_paid_scope", true)
+    .gte(
+      "kickoff_at",
+      from.toISOString(),
+    )
+    .lt(
+      "kickoff_at",
+      to.toISOString(),
+    )
+    .order("kickoff_at", {
+      ascending: true,
+    });
+
+  if (error) {
+    throw new Error(
+      `Could not load paid-scope fixtures: ${error.message}`,
+    );
+  }
+
+  return (
+    (data ?? []) as FixtureRow[]
+  ).filter(
+    (fixture) =>
+      getSofiaDate(
+        new Date(
+          fixture.kickoff_at,
+        ),
+      ) === date,
+  );
+}
+
+async function getPublishedBoard(
+  date: string,
+): Promise<{
+  run: PublicationRunRow;
+  fixtures: FixtureRow[];
+}> {
+  const db = adminDb();
+
+  const {
+    data: runData,
+    error: runError,
+  } = await db
+    .from("publication_runs")
+    .select(
+      "id,publication_date,published_at,status",
+    )
+    .eq("board_kind", "paid")
+    .eq("publication_date", date)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (runError) {
+    throw new Error(
+      `Could not load paid publication run: ${runError.message}`,
+    );
+  }
+
+  if (!runData) {
+    throw new Error(
+      `No published paid board exists for ${date}. Publish the paid board first.`,
+    );
+  }
+
+  const run =
+    runData as PublicationRunRow;
+
+  const {
+    data: boardData,
+    error: boardError,
+  } = await db
+    .from("daily_board_fixtures")
+    .select("fixture_id")
+    .eq(
+      "publication_run_id",
+      run.id,
+    )
+    .order(
+      "league_display_order",
+      {
+        ascending: true,
+      },
+    )
+    .order(
+      "fixture_display_order",
+      {
+        ascending: true,
+      },
+    );
+
+  if (boardError) {
+    throw new Error(
+      `Could not load paid board fixtures: ${boardError.message}`,
+    );
+  }
+
+  const boardRows =
+    (boardData ?? []) as BoardFixtureRow[];
+
+  if (boardRows.length === 0) {
+    return {
+      run,
+      fixtures: [],
+    };
+  }
+
+  const fixtureIds =
+    boardRows.map(
+      (row) => row.fixture_id,
+    );
+
+  const {
+    data: fixtureData,
+    error: fixtureError,
+  } = await db
+    .from("fixtures")
+    .select(
+      "id,provider_fixture_id,kickoff_at,competition_name,home_team_name,away_team_name",
+    )
+    .in("id", fixtureIds);
+
+  if (fixtureError) {
+    throw new Error(
+      `Could not load board fixture details: ${fixtureError.message}`,
+    );
+  }
+
+  const fixtureMap = new Map(
+    (
+      (fixtureData ?? []) as FixtureRow[]
+    ).map(
+      (fixture) => [
+        fixture.id,
+        fixture,
+      ],
+    ),
+  );
+
+  const fixtures = fixtureIds.map(
+    (fixtureId) => {
+      const fixture =
+        fixtureMap.get(fixtureId);
+
+      if (!fixture) {
+        throw new Error(
+          `Fixture ${fixtureId} is missing from fixtures table`,
+        );
+      }
+
+      return fixture;
+    },
+  );
+
+  return {
+    run,
+    fixtures,
+  };
+}
+
+function ensurePreKickoff(
+  fixtures: FixtureRow[],
+) {
+  const now = Date.now();
+
+  const started = fixtures.filter(
+    (fixture) =>
+      new Date(
+        fixture.kickoff_at,
+      ).getTime() <= now,
+  );
+
+  if (started.length > 0) {
+    throw new Error(
+      [
+        "Refusing to save permanent analysis after kickoff.",
+        "This protects the tracking dataset from look-ahead bias.",
+        `Already-started fixtures: ${started
+          .map(
+            (fixture) =>
+              `${fixture.home_team_name} vs ${fixture.away_team_name}`,
+          )
+          .join(", ")}`,
+      ].join(" "),
+    );
+  }
+}
+
+function buildSnapshotRows({
+  publicationRunId,
+  fixture,
+  analysis,
+  capturedAt,
+}: {
+  publicationRunId: string;
+  fixture: FixtureRow;
+  analysis: Awaited<
+    ReturnType<typeof analyzePaidFixture>
+  >;
+  capturedAt: string;
+}) {
+  assertFourMarkets(
+    analysis.recommendations,
+  );
+
+  const ranks =
+    officialRanks(
+      analysis.recommendations,
+    );
+
+  return analysis.recommendations.map(
+    (candidate) => {
+      const metadata =
+        oddsMetadata(
+          analysis,
+          candidate,
+        );
+
+      const rank =
+        ranks.get(
+          `${candidate.market}:${candidate.selection}`,
+        ) ?? null;
+
+      return {
+        publication_run_id:
+          publicationRunId,
+        fixture_id: fixture.id,
+        access_tier: "paid",
+        market: candidate.market,
+        selection:
+          candidate.selection,
+
+        bookmaker_id:
+          metadata.bookmakerId,
+        bookmaker_name:
+          metadata.bookmakerName,
+
+        odds: candidate.odds,
+        odds_source:
+          metadata.oddsSource,
+        odds_fetched_at:
+          candidate.odds === null
+            ? null
+            : capturedAt,
+
+        model_probability:
+          candidate.modelProbability,
+
+        fair_bookmaker_probability:
+          candidate.bookmakerProbability,
+
+        fair_probability_source:
+          candidate.bookmakerProbabilitySource,
+
+        confidence:
+          candidate.confidence,
+
+        data_quality_score:
+          candidate.dataQuality,
+
+        qualifies:
+          candidate.qualifies,
+
+        official_rank_position:
+          rank,
+
+        rejection_reasons:
+          candidate.rejectionReasons,
+
+        model_version:
+          analysis.model.version,
+
+        analysis_snapshot: {
+          model: analysis.model,
+          fixture: analysis.fixture,
+          expectedGoals:
+            analysis.expectedGoals,
+          probabilities:
+            analysis.probabilities,
+          probabilityComponents:
+            analysis.probabilityComponents,
+          home: analysis.home,
+          away: analysis.away,
+          headToHead:
+            analysis.headToHead,
+          candidate,
+          odds: analysis.consensusOdds.find(
+            (item) =>
+              item.market ===
+                candidate.market &&
+              item.selection ===
+                candidate.selection,
+          ) ?? null,
+          reasoning:
+            snapshotReasoning(
+              candidate,
+            ),
+        },
+
+        published_at:
+          capturedAt,
+      };
+    },
+  );
+}
+
+function buildOfficialRecommendationRows(
+  snapshots: ExistingSnapshotRow[],
+) {
+  return snapshots
+    .filter(
+      (snapshot) =>
+        snapshot.official_rank_position !==
+        null,
+    )
+    .sort(
+      (first, second) =>
+        (
+          first.official_rank_position ??
+          99
+        ) -
+        (
+          second.official_rank_position ??
+          99
+        ),
+    )
+    .map((snapshot) => ({
+      publication_run_id:
+        snapshot.publication_run_id,
+      fixture_id:
+        snapshot.fixture_id,
+
+      access_tier: "paid",
+
+      market: snapshot.market,
+      selection:
+        snapshot.selection,
+
+      rank_position:
+        snapshot.official_rank_position,
+
+      bookmaker_id:
+        snapshot.bookmaker_id,
+      bookmaker_name:
+        snapshot.bookmaker_name,
+
+      odds: snapshot.odds,
+      odds_fetched_at:
+        snapshot.odds_fetched_at,
+
+      model_probability:
+        snapshot.model_probability,
+
+      fair_bookmaker_probability:
+        snapshot.fair_bookmaker_probability,
+
+      confidence:
+        snapshot.confidence,
+
+      data_quality_score:
+        snapshot.data_quality_score,
+      data_quality_passed:
+        (
+          snapshot.data_quality_score ??
+          0
+        ) >= 0.65,
+
+      analysis_snapshot: {
+        ...snapshot.analysis_snapshot,
+        trackingSnapshot: {
+          market:
+            snapshot.market,
+          selection:
+            snapshot.selection,
+          qualifies:
+            snapshot.qualifies,
+          officialRankPosition:
+            snapshot.official_rank_position,
+          modelVersion:
+            snapshot.model_version,
+          fairProbabilitySource:
+            snapshot.fair_probability_source,
+          oddsSource:
+            snapshot.odds_source,
+        },
+      },
+
+      reasoning:
+        `Official paid pick. Confidence ${(snapshot.confidence * 100).toFixed(2)}%.`,
+
+      published_at:
+        snapshot.published_at,
+    }));
+}
+
+async function existingSnapshots(
+  publicationRunId: string,
+  fixtureId: string,
+): Promise<ExistingSnapshotRow[]> {
+  const db = adminDb();
+
+  const {
+    data,
+    error,
+  } = await db
+    .from(
+      "market_analysis_snapshots",
+    )
+    .select(
+      [
+        "publication_run_id",
+        "fixture_id",
+        "market",
+        "selection",
+        "bookmaker_id",
+        "bookmaker_name",
+        "odds",
+        "odds_source",
+        "odds_fetched_at",
+        "model_probability",
+        "fair_bookmaker_probability",
+        "fair_probability_source",
+        "confidence",
+        "data_quality_score",
+        "qualifies",
+        "official_rank_position",
+        "rejection_reasons",
+        "model_version",
+        "analysis_snapshot",
+        "published_at",
+      ].join(","),
+    )
+    .eq(
+      "publication_run_id",
+      publicationRunId,
+    )
+    .eq(
+      "fixture_id",
+      fixtureId,
+    );
+
+  if (error) {
+    throw new Error(
+      `Could not read existing market snapshots: ${error.message}`,
+    );
+  }
+
+  return (
+    (data ?? []) as ExistingSnapshotRow[]
+  );
+}
+
+async function saveFixtureAnalysis({
+  publicationRunId,
+  fixture,
+}: {
+  publicationRunId: string;
+  fixture: FixtureRow;
+}) {
+  const db = adminDb();
+
+  let snapshots =
+    await existingSnapshots(
+      publicationRunId,
+      fixture.id,
+    );
+
+  let createdSnapshots = false;
+
+  if (snapshots.length === 0) {
+    const analysis =
+      await analyzePaidFixture(
+        fixture.provider_fixture_id,
+      );
+
+    const capturedAt =
+      new Date().toISOString();
+
+    const rows =
+      buildSnapshotRows({
+        publicationRunId,
+        fixture,
+        analysis,
+        capturedAt,
+      });
+
+    const {
+      error: snapshotError,
+    } = await db
+      .from(
+        "market_analysis_snapshots",
+      )
+      .insert(rows);
+
+    if (snapshotError) {
+      throw new Error(
+        `Could not save market tracking snapshots for ${fixture.home_team_name} vs ${fixture.away_team_name}: ${snapshotError.message}`,
+      );
+    }
+
+    createdSnapshots = true;
+
+    snapshots =
+      await existingSnapshots(
+        publicationRunId,
+        fixture.id,
+      );
+  }
+
+  if (snapshots.length !== 4) {
+    throw new Error(
+      `Expected exactly 4 frozen tracking snapshots for ${fixture.home_team_name} vs ${fixture.away_team_name}; found ${snapshots.length}`,
+    );
+  }
+
+  const officialRows =
+    buildOfficialRecommendationRows(
+      snapshots,
+    );
+
+  if (officialRows.length > 0) {
+    const {
+      error: recommendationError,
+    } = await db
+      .from("recommendations")
+      .upsert(
+        officialRows,
+        {
+          onConflict:
+            "publication_run_id,fixture_id,market,selection",
+          ignoreDuplicates: true,
+        },
+      );
+
+    if (recommendationError) {
+      throw new Error(
+        `Could not save official recommendations for ${fixture.home_team_name} vs ${fixture.away_team_name}: ${recommendationError.message}`,
+      );
+    }
+  }
+
+  const {
+    error: boardError,
+  } = await db
+    .from(
+      "daily_board_fixtures",
+    )
+    .update({
+      has_value_pick:
+        officialRows.length > 0,
+    })
+    .eq(
+      "publication_run_id",
+      publicationRunId,
+    )
+    .eq(
+      "fixture_id",
+      fixture.id,
+    );
+
+  if (boardError) {
+    throw new Error(
+      `Could not update board value-pick flag: ${boardError.message}`,
+    );
+  }
+
+  return {
+    fixtureId:
+      fixture.provider_fixture_id,
+    match:
+      `${fixture.home_team_name} vs ${fixture.away_team_name}`,
+    trackingRows: 4,
+    officialPicks:
+      officialRows.length,
+    createdSnapshots,
+  };
+}
+
+export async function previewPaidAnalysisStorage(
+  date = getSofiaDate(),
+) {
+  const fixtures =
+    await getPaidScopeFixturesForDate(
+      date,
+    );
+
+  const matches = [];
+
+  for (const fixture of fixtures) {
+    const analysis =
+      await analyzePaidFixture(
+        fixture.provider_fixture_id,
+      );
+
+    assertFourMarkets(
+      analysis.recommendations,
+    );
+
+    const official =
+      analysis.recommendations
+        .filter(
+          (candidate) =>
+            candidate.qualifies,
+        )
+        .slice(0, 3);
+
+    matches.push({
+      providerFixtureId:
+        fixture.provider_fixture_id,
+      match:
+        `${fixture.home_team_name} vs ${fixture.away_team_name}`,
+      competition:
+        fixture.competition_name,
+      trackingRows: 4,
+      thresholdPassing:
+        analysis.recommendations.filter(
+          (candidate) =>
+            candidate.qualifies,
+        ).length,
+      officialPicks:
+        official.length,
+      officialSelections:
+        official.map(
+          (candidate) => ({
+            market:
+              candidate.market,
+            selection:
+              candidate.selection,
+            odds:
+              candidate.odds,
+            modelProbability:
+              candidate.modelProbability,
+            fairBookmakerProbability:
+              candidate.bookmakerProbability,
+            fairValueEdge:
+              candidate.valueEdge,
+            confidence:
+              candidate.confidence,
+          }),
+        ),
+    });
+  }
+
+  return {
+    mode: "dry_run",
+    date,
+    fixtureCount:
+      fixtures.length,
+    trackingRows:
+      fixtures.length * 4,
+    officialPickCount:
+      matches.reduce(
+        (sum, match) =>
+          sum +
+          match.officialPicks,
+        0,
+      ),
+    matches,
+  };
+}
+
+export async function storePaidAnalysis(
+  date = getSofiaDate(),
+) {
+  const db = adminDb();
+
+  const {
+    run,
+    fixtures,
+  } = await getPublishedBoard(
+    date,
+  );
+
+  ensurePreKickoff(
+    fixtures,
+  );
+
+  const results = [];
+
+  for (const fixture of fixtures) {
+    results.push(
+      await saveFixtureAnalysis({
+        publicationRunId:
+          run.id,
+        fixture,
+      }),
+    );
+  }
+
+  const {
+    count,
+    error: countError,
+  } = await db
+    .from("recommendations")
+    .select(
+      "id",
+      {
+        count: "exact",
+        head: true,
+      },
+    )
+    .eq(
+      "publication_run_id",
+      run.id,
+    )
+    .eq(
+      "access_tier",
+      "paid",
+    );
+
+  if (countError) {
+    throw new Error(
+      `Could not count official recommendations: ${countError.message}`,
+    );
+  }
+
+  const recommendationCount =
+    count ?? 0;
+
+  const {
+    error: runUpdateError,
+  } = await db
+    .from("publication_runs")
+    .update({
+      recommendation_count:
+        recommendationCount,
+    })
+    .eq("id", run.id);
+
+  if (runUpdateError) {
+    throw new Error(
+      `Could not update publication recommendation count: ${runUpdateError.message}`,
+    );
+  }
+
+  return {
+    mode: "committed",
+    date,
+    publicationRunId:
+      run.id,
+    fixtureCount:
+      fixtures.length,
+    trackingRows:
+      fixtures.length * 4,
+    officialPickCount:
+      recommendationCount,
+    immutable: true,
+    results,
+  };
+}

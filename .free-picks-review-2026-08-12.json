@@ -1,0 +1,34 @@
+﻿{
+    "date":  "2026-08-12",
+    "picks":  [
+                  {
+                      "rank":  1,
+                      "fixtureId":  1605333,
+                      "home":  "Helios",
+                      "away":  "Viimsi",
+                      "competition":  "Cup",
+                      "kickoffAt":  "2026-08-12T15:00:00+00:00",
+                      "selection":  "Over 2.5",
+                      "modelProbabilityPct":  88,
+                      "confidencePct":  90,
+                      "priorityBand":  "75_plus",
+                      "odds":  null,
+                      "oddsSource":  null
+                  },
+                  {
+                      "rank":  2,
+                      "fixtureId":  1605327,
+                      "home":  "Phoenix",
+                      "away":  "Vaprus",
+                      "competition":  "Cup",
+                      "kickoffAt":  "2026-08-12T16:00:00+00:00",
+                      "selection":  "Over 2.5",
+                      "modelProbabilityPct":  75,
+                      "confidencePct":  80,
+                      "priorityBand":  "75_plus",
+                      "odds":  null,
+                      "oddsSource":  null
+                  }
+              ],
+    "reviewToken":  "eyJ2ZXJzaW9uIjoxLCJkYXRlIjoiMjAyNi0wOC0xMiIsImNyZWF0ZWRBdCI6IjIwMjYtMDgtMTFUMTg6MzI6MDEuMzM1WiIsInJvd3MiOlt7InB1YmxpY2F0aW9uX2RhdGUiOiIyMDI2LTA4LTEyIiwiZml4dHVyZV9pZCI6IjhlODk4NzBkLWZmYzYtNDM1MC1hYmU4LWZkMzg5ZDBhOTM3OSIsInJhbmtfcG9zaXRpb24iOjEsIm1hcmtldCI6Im91MjUiLCJzZWxlY3Rpb24iOiJvdmVyXzJfNSIsIm1vZGVsX3Byb2JhYmlsaXR5IjowLjg3NSwiY29uZmlkZW5jZSI6MC45LCJtb2RlbF92ZXJzaW9uIjoib3ZlcmVkZ2UtZnJlZS12MSIsImJvb2ttYWtlcl9pZCI6bnVsbCwiYm9va21ha2VyX25hbWUiOm51bGwsIm9kZHMiOm51bGwsIm9kZHNfc291cmNlIjpudWxsLCJvZGRzX2ZldGNoZWRfYXQiOm51bGwsImFuYWx5c2lzX3NuYXBzaG90Ijp7ImVuZ2luZSI6Ik92ZXJFZGdlIEZyZWUgUGlja3MiLCJtb2RlbFZlcnNpb24iOiJvdmVyZWRnZS1mcmVlLXYxIiwiZml4dHVyZUlkIjoxNjA1MzMzLCJkaXNwbGF5U2VsZWN0aW9uIjoiT3ZlciAyLjUiLCJtb2RlbFByb2JhYmlsaXR5UGN0Ijo4OCwiY29uZmlkZW5jZVBjdCI6OTAsInByaW9yaXR5QmFuZCI6Ijc1X3BsdXMiLCJjb21wZXRpdGlvbiI6IkN1cCIsImNvdW50cnkiOiJFc3RvbmlhIiwia2lja29mZkF0IjoiMjAyNi0wOC0xMlQxNTowMDowMCswMDowMCIsImhvbWVUZWFtIjoiSGVsaW9zIiwiYXdheVRlYW0iOiJWaWltc2kiLCJtZXRyaWNzIjp7ImhvbWUiOnsiZ2FtZXMiOjgsImF2Z0ZvciI6MS41LCJhdmdBZyI6Mywib3ZlcjI1UmF0ZSI6MSwidW5kZXIyNVJhdGUiOjAsInBwZyI6MS4xMjUsImNsZWFuU2hlZXRSYXRlIjowLjI1LCJmYWlsVG9TY29yZVJhdGUiOjAuMzc1fSwiYXdheSI6eyJnYW1lcyI6MTIsImF2Z0ZvciI6MS41ODMzMzMzMzMzMzMzMzMzLCJhdmdBZyI6MS41ODMzMzMzMzMzMzMzMzMzLCJvdmVyMjVSYXRlIjowLjc1LCJ1bmRlcjI1UmF0ZSI6MC4yNSwicHBnIjoxLjQxNjY2NjY2NjY2NjY2NjcsImNsZWFuU2hlZXRSYXRlIjowLjMzMzMzMzMzMzMzMzMzMzMsImZhaWxUb1Njb3JlUmF0ZSI6MC4yNX19LCJzZWxlY3Rpb25Qb2xpY3kiOnsidGFyZ2V0RGFpbHlQaWNrcyI6MiwicHJlZmVycmVkQ29uZmlkZW5jZVBjdCI6NzUsIm9kZHNBZmZlY3RTZWxlY3Rpb24iOmZhbHNlfX19LHsicHVibGljYXRpb25fZGF0ZSI6IjIwMjYtMDgtMTIiLCJmaXh0dXJlX2lkIjoiZTUyNTVlMjMtMWM0My00MWQ0LWJlOGMtNGIxNmE5MjE2YTUzIiwicmFua19wb3NpdGlvbiI6MiwibWFya2V0Ijoib3UyNSIsInNlbGVjdGlvbiI6Im92ZXJfMl81IiwibW9kZWxfcHJvYmFiaWxpdHkiOjAuNzUsImNvbmZpZGVuY2UiOjAuODA0MTY2NjY2NjY2NjY2NywibW9kZWxfdmVyc2lvbiI6Im92ZXJlZGdlLWZyZWUtdjEiLCJib29rbWFrZXJfaWQiOm51bGwsImJvb2ttYWtlcl9uYW1lIjpudWxsLCJvZGRzIjpudWxsLCJvZGRzX3NvdXJjZSI6bnVsbCwib2Rkc19mZXRjaGVkX2F0IjpudWxsLCJhbmFseXNpc19zbmFwc2hvdCI6eyJlbmdpbmUiOiJPdmVyRWRnZSBGcmVlIFBpY2tzIiwibW9kZWxWZXJzaW9uIjoib3ZlcmVkZ2UtZnJlZS12MSIsImZpeHR1cmVJZCI6MTYwNTMyNywiZGlzcGxheVNlbGVjdGlvbiI6Ik92ZXIgMi41IiwibW9kZWxQcm9iYWJpbGl0eVBjdCI6NzUsImNvbmZpZGVuY2VQY3QiOjgwLCJwcmlvcml0eUJhbmQiOiI3NV9wbHVzIiwiY29tcGV0aXRpb24iOiJDdXAiLCJjb3VudHJ5IjoiRXN0b25pYSIsImtpY2tvZmZBdCI6IjIwMjYtMDgtMTJUMTY6MDA6MDArMDA6MDAiLCJob21lVGVhbSI6IlBob2VuaXgiLCJhd2F5VGVhbSI6IlZhcHJ1cyIsIm1ldHJpY3MiOnsiaG9tZSI6eyJnYW1lcyI6MTIsImF2Z0ZvciI6Mi4yNSwiYXZnQWciOjIuNzUsIm92ZXIyNVJhdGUiOjAuODMzMzMzMzMzMzMzMzMzNCwidW5kZXIyNVJhdGUiOjAuMTY2NjY2NjY2NjY2NjY2NjYsInBwZyI6MS4xNjY2NjY2NjY2NjY2NjY3LCJjbGVhblNoZWV0UmF0ZSI6MC4wODMzMzMzMzMzMzMzMzMzMywiZmFpbFRvU2NvcmVSYXRlIjowLjE2NjY2NjY2NjY2NjY2NjY2fSwiYXdheSI6eyJnYW1lcyI6MTIsImF2Z0ZvciI6MS44MzMzMzMzMzMzMzMzMzMzLCJhdmdBZyI6MS41ODMzMzMzMzMzMzMzMzMzLCJvdmVyMjVSYXRlIjowLjY2NjY2NjY2NjY2NjY2NjYsInVuZGVyMjVSYXRlIjowLjMzMzMzMzMzMzMzMzMzMzMsInBwZyI6MS42NjY2NjY2NjY2NjY2NjY3LCJjbGVhblNoZWV0UmF0ZSI6MC4yNSwiZmFpbFRvU2NvcmVSYXRlIjowLjA4MzMzMzMzMzMzMzMzMzMzfX0sInNlbGVjdGlvblBvbGljeSI6eyJ0YXJnZXREYWlseVBpY2tzIjoyLCJwcmVmZXJyZWRDb25maWRlbmNlUGN0Ijo3NSwib2Rkc0FmZmVjdFNlbGVjdGlvbiI6ZmFsc2V9fX1dfQ.rH-Tn3wK_aA5kEvFz3MtX4D6psWpFGLQF8U-bn12GL0"
+}

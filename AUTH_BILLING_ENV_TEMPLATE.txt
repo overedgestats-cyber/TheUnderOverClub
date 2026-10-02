@@ -1,0 +1,22 @@
+﻿Required Clerk variables
+------------------------
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY
+
+Required Stripe variables
+-------------------------
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+
+Configure whichever recurring prices you want to sell:
+STRIPE_PRICE_WEEKLY
+STRIPE_PRICE_MONTHLY
+STRIPE_PRICE_QUARTERLY
+STRIPE_PRICE_YEARLY
+
+Important:
+- Do not paste secret values into chat.
+- Stripe secret key and Price IDs must belong to the same Stripe mode
+  (test with test, live with live).
+- The public /subscription page reads the actual configured Stripe Price
+  objects; it does not hardcode plan prices.

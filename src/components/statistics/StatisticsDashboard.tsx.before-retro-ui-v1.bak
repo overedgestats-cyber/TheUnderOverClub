@@ -1,0 +1,616 @@
+﻿"use client";
+
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import styles from "./StatisticsDashboard.module.css";
+
+type Streak = {
+  result: "won" | "lost" | null;
+  count: number;
+};
+
+type Summary = {
+  totalPicks: number;
+  settledPicks: number;
+  resolvedPicks: number;
+  pendingPicks: number;
+  won: number;
+  lost: number;
+  void: number;
+  winRatePct: number;
+  unitsProfit: number;
+  roiPct: number;
+  averageOdds: number | null;
+  currentStreak: Streak;
+};
+
+type MarketSummary =
+  Summary & {
+    market: string;
+  };
+
+type MonthSummary =
+  Summary & {
+    month: string;
+  };
+
+type TierStatistics = {
+  generatedAt: string;
+  timezone: string;
+  accessTier: "free" | "paid";
+  stakingModel: string;
+  definitions: {
+    winRate: string;
+    roi: string;
+    unitsProfit: string;
+  };
+  overall: Summary;
+  byMarket: MarketSummary[];
+  byMonth: MonthSummary[];
+};
+
+type OverviewStatistics = {
+  generatedAt: string;
+  timezone: string;
+  combined: Summary;
+  free: Summary;
+  paid: Summary;
+  byMonth: MonthSummary[];
+};
+
+type Props = {
+  free: TierStatistics;
+  paid: TierStatistics;
+  overview: OverviewStatistics;
+};
+
+type View =
+  | "all"
+  | "free"
+  | "paid";
+
+const MARKET_LABELS: Record<
+  string,
+  string
+> = {
+  ou25: "O/U 2.5",
+  btts: "BTTS",
+  one_x_two: "1X2",
+  double_chance: "Double Chance",
+};
+
+function signed(
+  value: number,
+  suffix = "",
+) {
+  const prefix =
+    value > 0 ? "+" : "";
+
+  return `${prefix}${value.toFixed(2)}${suffix}`;
+}
+
+function odds(
+  value: number | null,
+) {
+  return value === null
+    ? "—"
+    : value.toFixed(2);
+}
+
+function streakLabel(
+  streak: Streak,
+) {
+  if (
+    !streak.result ||
+    streak.count === 0
+  ) {
+    return "—";
+  }
+
+  return `${
+    streak.result === "won"
+      ? "W"
+      : "L"
+  }${streak.count}`;
+}
+
+function MetricCard({
+  label,
+  value,
+  sub,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`${styles.metricCard} ${
+        accent
+          ? styles.metricCardAccent
+          : ""
+      }`}
+    >
+      <span className={styles.metricLabel}>
+        {label}
+      </span>
+      <strong className={styles.metricValue}>
+        {value}
+      </strong>
+      {sub ? (
+        <span className={styles.metricSub}>
+          {sub}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function PerformanceBlock({
+  title,
+  eyebrow,
+  summary,
+  markets,
+  months,
+}: {
+  title: string;
+  eyebrow: string;
+  summary: Summary;
+  markets?: MarketSummary[];
+  months?: MonthSummary[];
+}) {
+  const hasSettled =
+    summary.settledPicks > 0;
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <div>
+          <span className={styles.eyebrow}>
+            {eyebrow}
+          </span>
+          <h2>{title}</h2>
+        </div>
+
+        <div className={styles.recordBadge}>
+          {summary.won}W · {summary.lost}L
+          {summary.void > 0
+            ? ` · ${summary.void}V`
+            : ""}
+        </div>
+      </div>
+
+      <div className={styles.metricGrid}>
+        <MetricCard
+          label="Win Rate"
+          value={`${summary.winRatePct.toFixed(
+            1,
+          )}%`}
+          sub={
+            hasSettled
+              ? `${summary.won} wins from ${summary.resolvedPicks} resolved`
+              : "No settled picks yet"
+          }
+          accent
+        />
+
+        <MetricCard
+          label="Units"
+          value={signed(
+            summary.unitsProfit,
+          )}
+          sub="1 unit per pick"
+        />
+
+        <MetricCard
+          label="ROI"
+          value={signed(
+            summary.roiPct,
+            "%",
+          )}
+          sub="Settled priced picks"
+        />
+
+        <MetricCard
+          label="Total Picks"
+          value={String(
+            summary.totalPicks,
+          )}
+          sub={`${summary.pendingPicks} pending`}
+        />
+
+        <MetricCard
+          label="Average Odds"
+          value={odds(
+            summary.averageOdds,
+          )}
+          sub="Published odds"
+        />
+
+        <MetricCard
+          label="Current Streak"
+          value={streakLabel(
+            summary.currentStreak,
+          )}
+          sub="Resolved picks only"
+        />
+      </div>
+
+      {!hasSettled ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            ▦
+          </div>
+          <div>
+            <strong>
+              No settled picks yet
+            </strong>
+            <p>
+              Performance data will appear
+              automatically after genuine
+              picks are settled.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {markets ? (
+        <div className={styles.panel}>
+          <div className={styles.panelHeading}>
+            <div>
+              <span
+                className={styles.eyebrow}
+              >
+                Market breakdown
+              </span>
+              <h3>
+                Performance by market
+              </h3>
+            </div>
+          </div>
+
+          <div
+            className={
+              styles.marketTable
+            }
+          >
+            <div
+              className={
+                styles.tableHeader
+              }
+            >
+              <span>Market</span>
+              <span>Picks</span>
+              <span>Win %</span>
+              <span>Units</span>
+              <span>ROI</span>
+            </div>
+
+            {markets.map(
+              (market) => (
+                <div
+                  className={
+                    styles.tableRow
+                  }
+                  key={market.market}
+                >
+                  <strong>
+                    {MARKET_LABELS[
+                      market.market
+                    ] ??
+                      market.market}
+                  </strong>
+                  <span>
+                    {market.totalPicks}
+                  </span>
+                  <span>
+                    {market.winRatePct.toFixed(
+                      1,
+                    )}
+                    %
+                  </span>
+                  <span>
+                    {signed(
+                      market.unitsProfit,
+                    )}
+                  </span>
+                  <span>
+                    {signed(
+                      market.roiPct,
+                      "%",
+                    )}
+                  </span>
+                </div>
+              ),
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {months ? (
+        <div className={styles.panel}>
+          <div className={styles.panelHeading}>
+            <div>
+              <span
+                className={styles.eyebrow}
+              >
+                History
+              </span>
+              <h3>
+                Monthly performance
+              </h3>
+            </div>
+          </div>
+
+          {months.length === 0 ? (
+            <div
+              className={
+                styles.panelEmpty
+              }
+            >
+              Monthly history will appear
+              after the first settled picks.
+            </div>
+          ) : (
+            <div
+              className={
+                styles.marketTable
+              }
+            >
+              <div
+                className={
+                  styles.tableHeader
+                }
+              >
+                <span>Month</span>
+                <span>Picks</span>
+                <span>Win %</span>
+                <span>Units</span>
+                <span>ROI</span>
+              </div>
+
+              {[...months]
+                .reverse()
+                .map((month) => (
+                  <div
+                    className={
+                      styles.tableRow
+                    }
+                    key={month.month}
+                  >
+                    <strong>
+                      {month.month}
+                    </strong>
+                    <span>
+                      {month.totalPicks}
+                    </span>
+                    <span>
+                      {month.winRatePct.toFixed(
+                        1,
+                      )}
+                      %
+                    </span>
+                    <span>
+                      {signed(
+                        month.unitsProfit,
+                      )}
+                    </span>
+                    <span>
+                      {signed(
+                        month.roiPct,
+                        "%",
+                      )}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+export default function StatisticsDashboard({
+  free,
+  paid,
+  overview,
+}: Props) {
+  const [view, setView] =
+    useState<View>("all");
+
+  const combinedMarkets =
+    useMemo(() => {
+      return [
+        ...free.byMarket,
+        ...paid.byMarket,
+      ];
+    }, [free.byMarket, paid.byMarket]);
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.pixelGrid} />
+
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div>
+            <span className={styles.kicker}>
+              THE UNDER OVER CLUB
+            </span>
+            <h1>Statistics</h1>
+            <p>
+              Real results. Real odds.
+              No simulated performance.
+            </p>
+          </div>
+
+          <div className={styles.liveBadge}>
+            <span
+              className={styles.liveDot}
+            />
+            LIVE DATABASE
+          </div>
+        </header>
+
+        <nav
+          className={styles.tabs}
+          aria-label="Statistics views"
+        >
+          {(
+            [
+              ["all", "All"],
+              [
+                "free",
+                "Free Picks",
+              ],
+              [
+                "paid",
+                "Paid Picks",
+              ],
+            ] as const
+          ).map(
+            ([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className={
+                  view === key
+                    ? styles.tabActive
+                    : styles.tab
+                }
+                onClick={() =>
+                  setView(key)
+                }
+              >
+                {label}
+              </button>
+            ),
+          )}
+        </nav>
+
+        {view === "all" ? (
+          <>
+            <PerformanceBlock
+              eyebrow="Combined record"
+              title="All Picks"
+              summary={
+                overview.combined
+              }
+              months={
+                overview.byMonth
+              }
+            />
+
+            <div
+              className={
+                styles.splitGrid
+              }
+            >
+              <div
+                className={
+                  styles.miniRecord
+                }
+              >
+                <span
+                  className={
+                    styles.eyebrow
+                  }
+                >
+                  Free Picks
+                </span>
+                <strong>
+                  {overview.free.winRatePct.toFixed(
+                    1,
+                  )}
+                  %
+                </strong>
+                <p>
+                  {
+                    overview.free
+                      .totalPicks
+                  }{" "}
+                  picks ·{" "}
+                  {signed(
+                    overview.free
+                      .unitsProfit,
+                  )}{" "}
+                  units
+                </p>
+              </div>
+
+              <div
+                className={
+                  styles.miniRecord
+                }
+              >
+                <span
+                  className={
+                    styles.eyebrow
+                  }
+                >
+                  Paid Picks
+                </span>
+                <strong>
+                  {overview.paid.winRatePct.toFixed(
+                    1,
+                  )}
+                  %
+                </strong>
+                <p>
+                  {
+                    overview.paid
+                      .totalPicks
+                  }{" "}
+                  picks ·{" "}
+                  {signed(
+                    overview.paid
+                      .unitsProfit,
+                  )}{" "}
+                  units
+                </p>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {view === "free" ? (
+          <PerformanceBlock
+            eyebrow="Free record"
+            title="Free Picks"
+            summary={free.overall}
+            markets={free.byMarket}
+            months={free.byMonth}
+          />
+        ) : null}
+
+        {view === "paid" ? (
+          <PerformanceBlock
+            eyebrow="Member record"
+            title="Paid Picks"
+            summary={paid.overall}
+            markets={paid.byMarket}
+            months={paid.byMonth}
+          />
+        ) : null}
+
+        <footer className={styles.footer}>
+          <p>
+            Statistics use settled picks
+            stored in the live database.
+            Voids are excluded from win
+            rate. ROI uses a fixed 1-unit
+            stake per priced settled pick.
+          </p>
+          <span>
+            Data timezone: Europe/Sofia
+          </span>
+        </footer>
+      </div>
+    </main>
+  );
+}

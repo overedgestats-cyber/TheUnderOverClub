@@ -1,0 +1,163 @@
+"use client";
+
+import Link from "next/link";
+import {
+  usePathname,
+} from "next/navigation";
+
+import styles from "./RetroShell.module.css";
+
+type Props = {
+  signedIn: boolean;
+  mobile?: boolean;
+};
+
+const desktopItems = [
+  {
+    href: "/",
+    label: "HOME",
+    icon: "⌂",
+  },
+  {
+    href: "/today",
+    label: "FREE PICKS",
+    icon: "●",
+  },
+  {
+    href: "/paid-picks",
+    label: "PAID PICKS",
+    icon: "■",
+  },
+  {
+    href: "/statistics",
+    label: "STATS",
+    icon: "▥",
+  },
+  {
+    href: "/game",
+    label: "GAME",
+    icon: "★",
+  },
+  {
+    href: "/subscription",
+    label: "MEMBERSHIP",
+    icon: "◆",
+  },
+] as const;
+
+function isActive(
+  pathname: string,
+  href: string,
+) {
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname.startsWith(
+    href,
+  );
+}
+
+export default function RetroNavigation({
+  signedIn,
+  mobile = false,
+}: Props) {
+  const pathname =
+    usePathname();
+
+  const accountItem = {
+    href:
+      signedIn
+        ? "/account"
+        : "/sign-in",
+    label:
+      signedIn
+        ? "ACCOUNT"
+        : "SIGN IN",
+    icon: "▣",
+  };
+
+  const items =
+    mobile
+      ? [
+          desktopItems[0],
+          desktopItems[1],
+          desktopItems[2],
+          desktopItems[4],
+          accountItem,
+        ]
+      : [
+          ...desktopItems,
+          accountItem,
+        ];
+
+  return (
+    <nav
+      className={
+        mobile
+          ? styles.mobileNav
+          : styles.sideNav
+      }
+      aria-label={
+        mobile
+          ? "Mobile navigation"
+          : "Primary navigation"
+      }
+    >
+      {items.map(
+        (
+          item,
+        ) => {
+          const active =
+            isActive(
+              pathname,
+              item.href,
+            );
+
+          return (
+            <Link
+              key={
+                item.href
+              }
+              href={
+                item.href
+              }
+              className={
+                active
+                  ? styles.navItemActive
+                  : styles.navItem
+              }
+            >
+              <span
+                className={
+                  styles.navIcon
+                }
+                aria-hidden="true"
+              >
+                {
+                  item.icon
+                }
+              </span>
+              <span>
+                {
+                  item.label
+                }
+              </span>
+              {!mobile &&
+              active ? (
+                <span
+                  className={
+                    styles.navArrow
+                  }
+                  aria-hidden="true"
+                >
+                  ▶
+                </span>
+              ) : null}
+            </Link>
+          );
+        },
+      )}
+    </nav>
+  );
+}

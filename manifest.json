@@ -1,0 +1,142 @@
+[
+  {
+    "path": "src/app/about/page.module.css",
+    "originalHash": null,
+    "updatedHash": "04723dd31d32d9451d9b263db41a30731da052869660abad055e5685abea861d"
+  },
+  {
+    "path": "src/app/about/page.tsx",
+    "originalHash": null,
+    "updatedHash": "cd65c5a5b951817f9fb1291f7e3a6d499cc961e5fd52da2365d18f6622aec5d6"
+  },
+  {
+    "path": "src/app/api/cron/settlement/route.ts",
+    "originalHash": "8a8a9e6502ba78cd0230348abb389f93dab76575d61f1ac8527271873a77b132",
+    "updatedHash": "f84b87abb29445bfea114221101c92a787f2f58749adbf101f7257ac3d830106"
+  },
+  {
+    "path": "src/app/contact/page.tsx",
+    "originalHash": "f2b927c4d8618450e9697126f6512a5a45cc5790ff16d5a8076bd575cea467b0",
+    "updatedHash": "3b96d13b928ff8712d367e3249fb758d6aed7ca0b928d162edf42b385a624b0b"
+  },
+  {
+    "path": "src/app/game/layout.tsx",
+    "originalHash": "65ea9efd4eb6fd155c4274c9774d55a7f00808f68d12c84fa052c651a15f7e88",
+    "updatedHash": "139e40800abad3520b5f0a9b6868ddf198d95049667a02d498336f714b7b9582"
+  },
+  {
+    "path": "src/app/layout.tsx",
+    "originalHash": "ae6269f6fb8df2c40a1a917838c41ba91885d5295b1201f56b112233bd1ba8c0",
+    "updatedHash": "bdbcdb1deeba5f85e9dd5cf99836fac02025446ec5cd933c81ab74686e090438"
+  },
+  {
+    "path": "src/app/privacy/page.tsx",
+    "originalHash": "4a5f5e438d47a8de7df1bd17cc1528d46f877a4e3a6304d7d8dbada721cc863a",
+    "updatedHash": "c08c26ca89b9baad5154dac5a7b670abaa6b32ae07223725303b41dc531217d3"
+  },
+  {
+    "path": "src/app/responsible-play/page.tsx",
+    "originalHash": "6fca9aa87bcbbaed695a6267d96280a9429ecd0c93db7c6e553857333defb92a",
+    "updatedHash": "676658d6a2b121dad9a79ed2e44035f3a052a76c51dca05701dcbea0b5bb1a66"
+  },
+  {
+    "path": "src/app/robots.ts",
+    "originalHash": "97838bcf58b2420fb5477065bacca7e2a21977ff01273bbdf271d57b854975ce",
+    "updatedHash": "b5c4760b4176a6ebdfaa71c354ff17234f801c907b46eb1cee71c5afa2138f04"
+  },
+  {
+    "path": "src/app/sign-in/layout.tsx",
+    "originalHash": null,
+    "updatedHash": "cd6ae06870d5437adba94b9351a73406522fb82e074209b0c2719d782ee22713"
+  },
+  {
+    "path": "src/app/sign-up/layout.tsx",
+    "originalHash": null,
+    "updatedHash": "cd6ae06870d5437adba94b9351a73406522fb82e074209b0c2719d782ee22713"
+  },
+  {
+    "path": "src/app/sitemap.ts",
+    "originalHash": "4498c07397fa8015fca249ce3c7d774821e98691ed0dce1e2bb888b85e64cacc",
+    "updatedHash": "f5ecc520816de37ca9e1160e0796cba9a265b499c64beadfbd39ec15df86caf3"
+  },
+  {
+    "path": "src/app/statistics/layout.tsx",
+    "originalHash": "1214314cfe9cd378b43e1bdc230925f088be0ac56f041f9cd9d76a4837d3482a",
+    "updatedHash": "a388e5d97d3575fe781ae10f49641c2c5562547c0db0b08caf29e18932b66063"
+  },
+  {
+    "path": "src/app/subscription/layout.tsx",
+    "originalHash": "8c0e0797f6ed753d9d4e29b4d6a4126979840dcec35065e7d1127f1a772241a1",
+    "updatedHash": "f72a19f4d3afaff5496a23f8db7a7ead2e5a6b2041c81ec5ed6b9af1af6a0d30"
+  },
+  {
+    "path": "src/app/terms/page.tsx",
+    "originalHash": "45e66a66fd71050aff754868d770a4e82db959a05b61ee437f4bf04ed7d7a595",
+    "updatedHash": "f89c8d7c0074b9cce87d9e1aa031a250a9fdfddaf8ec3ae70c6f05755bae5de5"
+  },
+  {
+    "path": "src/app/today/layout.tsx",
+    "originalHash": "f69aa89f061b8a37c1409c6a06463db72b5a9f754a18b5687ab528ad14e1ee5a",
+    "updatedHash": "a98a8c32cc94775d9138cac638f131461a23813ffed0ba189f2827bd54be0308"
+  },
+  {
+    "path": "src/components/analytics/AnalyticsProvider.tsx",
+    "originalHash": "896651c6ffc5e7932b1e0988808d67b524d26681718dec969ec35b37ace431f8",
+    "updatedHash": "a9d88ffab301ac100e51105840826d540898d6305ceb55a30a1c44be051e5769"
+  },
+  {
+    "path": "src/components/legal/LegalShell.tsx",
+    "originalHash": "2afa430b6669238ee9e6ef1cf689e22eb9b8c226c51c9c38a9d4cf8b3b8d4649",
+    "updatedHash": "69e4f909e331b8a1300142c15c747a13920af90775f8cff95e0e16d72e02773b"
+  },
+  {
+    "path": "src/components/retro/RetroNavigation.tsx",
+    "originalHash": "a17807c9928f6cffe80edac84915d11cbfba6f6a5212a7f51ba9815e7aedc7ab",
+    "updatedHash": "bab2f6d0ef56af7ea9404bb2fa83fa507e572fd298c48160bd90dbcf66a73ca8"
+  },
+  {
+    "path": "src/components/retro/RetroShell.tsx",
+    "originalHash": "334235990d61c9034ac85060bb322087ea57912abb8bb3008cdd8621db6cad06",
+    "updatedHash": "3c2912cee6d01c0f816cd574d31486187a3f2455904971b09aeca94945fc2471"
+  },
+  {
+    "path": "src/lib/api-football/client.ts",
+    "originalHash": "25ff9c03712d7de460f7d6d6afb71b0ad214b1753936494a7ce56d06845f0a09",
+    "updatedHash": "b6da85c607ac2cb845436c8203ec26727100da14bf3d67429e5c81f6fbe4652b"
+  },
+  {
+    "path": "src/lib/automation/settlement.ts",
+    "originalHash": "40c0d0c5034036632f0b52280ebff4c4aa7780972c3456d64d77d19a10bb26e2",
+    "updatedHash": "df0292bfae93997e4cb32a83224cd47ba20d97ee001fe5d30dd39871ca58b3d5"
+  },
+  {
+    "path": "src/lib/free-picks/free-picks-settlement.ts",
+    "originalHash": "b55d67bfd2ba092f5c65834ac8a0b68a5db4077fa9245dae15f8b7665be35c06",
+    "updatedHash": "76edc281ea2162c338a0d382290a7635c2deeee4dd2d12cc7195101caacb374b"
+  },
+  {
+    "path": "src/lib/seo/metadata.ts",
+    "originalHash": null,
+    "updatedHash": "16ed3f0cbc549d183baee103e04ede34592fb96df6e90fe6a206d6f7901d248f"
+  },
+  {
+    "path": "src/lib/settlement/settle-paid-analysis.ts",
+    "originalHash": "e66022280f69f48fc75c55576f6e37ab4d18fa580be7f63b9578c068c96b6312",
+    "updatedHash": "3156576905c6ef0d67b6f62ada8c5c4b10499d52f94e634ef0b0fcc3a633bcdd"
+  },
+  {
+    "path": "src/lib/statistics/recommendation-statistics.ts",
+    "originalHash": "87bc970d574f0608213e640c7500dc72caf6d3e6d7f03b799e59ea7f2ea00b9e",
+    "updatedHash": "4ad8bbbddd406bf96552f44072a149ce3e82e92181adeb769d403e64f142df73"
+  },
+  {
+    "path": "scripts/settle-history.mjs",
+    "originalHash": null,
+    "updatedHash": "49a1a0bc49580a77af63390d7bd8200bf0afc2cf103b2744bd142dd4d0f1ea17"
+  },
+  {
+    "path": "scripts/verify-settlement.cjs",
+    "originalHash": null,
+    "updatedHash": "b75cfe94fe0791c0840d7adaec5678c742d4fb76e1f50a36e675d34ea0d06c2c"
+  }
+]

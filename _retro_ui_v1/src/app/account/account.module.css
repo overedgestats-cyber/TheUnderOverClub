@@ -1,0 +1,190 @@
+.page { display: grid; gap: 8px; }
+.green { color: var(--retro-green-bright); }
+
+.accountGrid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.playerCard,
+.detailsCard,
+.systemCard {
+  border: 3px solid var(--retro-line);
+  background: #06090c;
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.playerCard {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 350px;
+  padding: 22px;
+  text-align: center;
+}
+
+.avatar {
+  transform: scale(1.5);
+  margin-bottom: 22px;
+}
+
+.playerCard > span {
+  color: var(--retro-purple);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.playerCard h1 {
+  margin: 8px 0 5px;
+  color: var(--retro-cream);
+  font-size: 28px;
+}
+
+.playerCard p {
+  max-width: 100%;
+  overflow: hidden;
+  color: #848c93;
+  font-size: 8px;
+  text-overflow: ellipsis;
+}
+
+.membership {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border: 2px solid #4c8b20;
+  background: #0d1a0c;
+}
+
+.membership span {
+  display: block;
+  color: #788079;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.membership strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--retro-green-bright);
+  font-size: 16px;
+}
+
+.detailsCard { min-width: 0; }
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-bottom: 2px solid var(--retro-line-soft);
+}
+
+.sectionTitle span,
+.sectionTitle h2 { color: var(--retro-yellow); }
+
+.sectionTitle h2 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.detailGrid > div {
+  min-height: 95px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 15px;
+  border-right: 1px solid var(--retro-line-soft);
+  border-bottom: 1px solid var(--retro-line-soft);
+}
+
+.detailGrid span {
+  color: #7c848b;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.detailGrid strong {
+  color: var(--retro-green-bright);
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+}
+
+.actions a,
+.actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 2px solid var(--retro-green);
+  background: #10270d;
+  color: var(--retro-green-bright);
+  font: inherit;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 38px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.actions form { margin: 0; }
+
+.systemCard {
+  grid-column: 1 / -1;
+  padding: 14px;
+}
+
+.systemCard > span {
+  color: var(--retro-blue);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.systemRows {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 10px;
+}
+
+.systemRows div {
+  padding: 12px;
+  border: 1px solid var(--retro-line-soft);
+}
+
+.systemRows p {
+  margin: 0;
+  color: #777f87;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.systemRows strong {
+  display: block;
+  margin-top: 6px;
+  color: #c2c6c9;
+  font-size: 9px;
+}
+
+@media (max-width: 760px) {
+  .accountGrid,
+  .detailGrid,
+  .systemRows { grid-template-columns: 1fr; }
+
+  .systemCard { grid-column: auto; }
+
+  .actions { flex-direction: column; }
+
+  .actions a,
+  .actions button,
+  .actions form { width: 100%; }
+}

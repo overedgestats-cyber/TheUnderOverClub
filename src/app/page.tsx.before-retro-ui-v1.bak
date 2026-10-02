@@ -1,0 +1,784 @@
+import Link from "next/link";
+import {
+  auth,
+} from "@clerk/nextjs/server";
+
+import {
+  getPublicFreePicks,
+} from "@/lib/free-picks/public-free-picks";
+import {
+  getCombinedStatistics,
+} from "@/lib/statistics/recommendation-statistics";
+
+import styles from "./home.module.css";
+
+export const dynamic =
+  "force-dynamic";
+export const revalidate =
+  0;
+
+type AnyRecord =
+  Record<
+    string,
+    any
+  >;
+
+function numberValue(
+  value: unknown,
+  fallback = 0,
+) {
+  const parsed =
+    Number(value);
+
+  return Number.isFinite(
+    parsed,
+  )
+    ? parsed
+    : fallback;
+}
+
+function stringValue(
+  value: unknown,
+  fallback = "",
+) {
+  return typeof value ===
+    "string"
+    ? value
+    : fallback;
+}
+
+function formatPercent(
+  value: unknown,
+) {
+  return `${numberValue(
+    value,
+  ).toFixed(1)}%`;
+}
+
+function formatUnits(
+  value: unknown,
+) {
+  const number =
+    numberValue(value);
+
+  return `${number >= 0 ? "+" : ""}${number.toFixed(
+    2,
+  )}`;
+}
+
+function pickSelection(
+  pick:
+    AnyRecord,
+) {
+  const raw =
+    stringValue(
+      pick.selection ??
+        pick.pick,
+    );
+
+  const normalized =
+    raw.toLowerCase();
+
+  if (
+    normalized ===
+      "over_2_5" ||
+    normalized ===
+      "over 2.5"
+  ) {
+    return "Over 2.5";
+  }
+
+  if (
+    normalized ===
+      "under_2_5" ||
+    normalized ===
+      "under 2.5"
+  ) {
+    return "Under 2.5";
+  }
+
+  return raw || "O/U 2.5";
+}
+
+function pickTeams(
+  pick:
+    AnyRecord,
+) {
+  const home =
+    stringValue(
+      pick.home ??
+        pick.homeTeam ??
+        pick.home_name,
+      "Home",
+    );
+
+  const away =
+    stringValue(
+      pick.away ??
+        pick.awayTeam ??
+        pick.away_name,
+      "Away",
+    );
+
+  return {
+    home,
+    away,
+  };
+}
+
+export default async function Home() {
+  const [
+    freeData,
+    combinedStats,
+    authState,
+  ] =
+    await Promise.all([
+      getPublicFreePicks(),
+      getCombinedStatistics(),
+      auth(),
+    ]);
+
+  const free =
+    freeData as AnyRecord;
+
+  const stats =
+    combinedStats as AnyRecord;
+
+  const overall =
+    (
+      stats.overall ??
+      stats
+    ) as AnyRecord;
+
+  const picks =
+    Array.isArray(
+      free.picks,
+    )
+      ? free.picks
+      : [];
+
+  const displayDate =
+    stringValue(
+      free.displayDate ??
+        free.date ??
+        free.publicationDate,
+      "Today",
+    );
+
+  const settledPicks =
+    numberValue(
+      overall.settledPicks ??
+        overall.resolvedPicks,
+    );
+
+  const totalPicks =
+    numberValue(
+      overall.totalPicks,
+    );
+
+  const isSignedIn =
+    Boolean(
+      authState.userId,
+    );
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.gridNoise} />
+
+      <div className={styles.shell}>
+        <header className={styles.header}>
+          <Link
+            href="/"
+            className={styles.brand}
+          >
+            <span className={styles.brandMark}>
+              UO
+            </span>
+            <span>
+              THE UNDER OVER CLUB
+            </span>
+          </Link>
+
+          <nav
+            className={styles.nav}
+            aria-label="Primary navigation"
+          >
+            <Link href="/today">
+              FREE
+            </Link>
+            <Link href="/paid-picks">
+              PAID PICKS
+            </Link>
+            <Link href="/statistics">
+              STATS
+            </Link>
+            <Link
+              href={
+                isSignedIn
+                  ? "/account"
+                  : "/sign-in"
+              }
+              className={styles.navAccent}
+            >
+              {isSignedIn
+                ? "ACCOUNT"
+                : "SIGN IN"}
+            </Link>
+          </nav>
+        </header>
+
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <div className={styles.eyebrow}>
+              FOOTBALL PICKS вЂў LIVE DATA вЂў REAL RESULTS
+            </div>
+
+            <h1>
+              STATS.
+              <br />
+              GOALS.
+              <br />
+              <span>
+                PROFIT.
+              </span>
+            </h1>
+
+            <p>
+              Two free O/U 2.5
+              selections every day.
+              Unlock the full paid
+              board when you want more.
+            </p>
+
+            <div className={styles.heroActions}>
+              <Link
+                href="/today"
+                className={styles.primaryButton}
+              >
+                VIEW FREE PICKS
+              </Link>
+
+              <Link
+                href="/subscription"
+                className={styles.secondaryButton}
+              >
+                UNLOCK ALL PICKS
+              </Link>
+            </div>
+
+            <div className={styles.heroMeta}>
+              <span>
+                2 FREE PICKS DAILY
+              </span>
+              <span>
+                FROM в‚¬2.49
+              </span>
+              <span>
+                1 UNIT PER PICK
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={styles.pixelStadium}
+            aria-hidden="true"
+          >
+            <div className={styles.scoreboard}>
+              <span>
+                THE CLUB
+              </span>
+              <strong>
+                DATA &gt; GUT
+              </strong>
+            </div>
+
+            <div className={styles.floodlightLeft} />
+            <div className={styles.floodlightRight} />
+
+            <div className={styles.stand}>
+              <div className={styles.crowd} />
+              <div className={styles.crowdSecond} />
+            </div>
+
+            <div className={styles.pitch}>
+              <div className={styles.pitchLine} />
+              <div className={styles.centerCircle} />
+              <div className={styles.goalLeft} />
+              <div className={styles.goalRight} />
+              <div className={styles.ball} />
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.kicker}>
+                TODAY'S FREE PICKS
+              </span>
+              <h2>
+                Free slate
+              </h2>
+            </div>
+
+            <div className={styles.sectionDate}>
+              {displayDate}
+            </div>
+          </div>
+
+          {picks.length > 0 ? (
+            <div className={styles.pickGrid}>
+              {picks
+                .slice(0, 2)
+                .map(
+                  (
+                    pick:
+                      AnyRecord,
+                    index:
+                      number,
+                  ) => {
+                    const teams =
+                      pickTeams(
+                        pick,
+                      );
+
+                    return (
+                      <article
+                        className={styles.pickCard}
+                        key={
+                          stringValue(
+                            pick.id,
+                          ) ||
+                          `${teams.home}-${teams.away}-${index}`
+                        }
+                      >
+                        <div className={styles.pickTop}>
+                          <span>
+                            PICK #{index + 1}
+                          </span>
+                          <span className={styles.pending}>
+                            {stringValue(
+                              pick.resultStatus ??
+                                pick.status,
+                              "PENDING",
+                            ).toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className={styles.competition}>
+                          {stringValue(
+                            pick.competition ??
+                              pick.league,
+                            "FOOTBALL",
+                          ).toUpperCase()}
+                        </div>
+
+                        <div className={styles.teams}>
+                          <strong>
+                            {teams.home}
+                          </strong>
+                          <span>
+                            VS
+                          </span>
+                          <strong>
+                            {teams.away}
+                          </strong>
+                        </div>
+
+                        <div className={styles.selection}>
+                          <span>
+                            O/U 2.5
+                          </span>
+                          <strong>
+                            {pickSelection(
+                              pick,
+                            )}
+                          </strong>
+                        </div>
+
+                        <div className={styles.pickMetrics}>
+                          <div>
+                            <span>
+                              MODEL
+                            </span>
+                            <strong>
+                              {Math.round(
+                                numberValue(
+                                  pick.modelProbabilityPct ??
+                                    pick.model_probability_pct ??
+                                    numberValue(
+                                      pick.model_probability,
+                                    ) *
+                                      100,
+                                ),
+                              )}
+                              %
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>
+                              CONFIDENCE
+                            </span>
+                            <strong>
+                              {Math.round(
+                                numberValue(
+                                  pick.confidencePct ??
+                                    pick.confidence_pct ??
+                                    numberValue(
+                                      pick.confidence,
+                                    ) *
+                                      100,
+                                ),
+                              )}
+                              %
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>
+                              ODDS
+                            </span>
+                            <strong>
+                              {pick.odds ===
+                              null ||
+                              pick.odds ===
+                                undefined
+                                ? "вЂ”"
+                                : numberValue(
+                                    pick.odds,
+                                  ).toFixed(
+                                    2,
+                                  )}
+                            </strong>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  },
+                )}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>
+                00
+              </div>
+              <div>
+                <strong>
+                  No free slate is published yet.
+                </strong>
+                <p>
+                  The next real selections
+                  will appear automatically
+                  when they are published.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.sectionFooter}>
+            <span>
+              MODEL: OVEREDGE FREE V1
+            </span>
+            <Link href="/today">
+              OPEN FREE PICKS в†’
+            </Link>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.kicker}>
+                REAL PERFORMANCE
+              </span>
+              <h2>
+                Official record
+              </h2>
+            </div>
+
+            <Link
+              href="/statistics"
+              className={styles.textLink}
+            >
+              FULL STATISTICS в†’
+            </Link>
+          </div>
+
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <span>
+                WIN RATE
+              </span>
+              <strong>
+                {formatPercent(
+                  overall.winRatePct,
+                )}
+              </strong>
+              <small>
+                {settledPicks > 0
+                  ? "Settled decisions only"
+                  : "No settled picks yet"}
+              </small>
+            </div>
+
+            <div className={styles.statCard}>
+              <span>
+                UNITS
+              </span>
+              <strong>
+                {formatUnits(
+                  overall.unitsProfit,
+                )}
+              </strong>
+              <small>
+                1 unit per pick
+              </small>
+            </div>
+
+            <div className={styles.statCard}>
+              <span>
+                ROI
+              </span>
+              <strong>
+                {formatPercent(
+                  overall.roiPct,
+                )}
+              </strong>
+              <small>
+                Settled priced picks
+              </small>
+            </div>
+
+            <div className={styles.statCard}>
+              <span>
+                SETTLED PICKS
+              </span>
+              <strong>
+                {settledPicks}
+              </strong>
+              <small>
+                {totalPicks} total published
+              </small>
+            </div>
+          </div>
+
+          <div className={styles.liveRecord}>
+            <span className={styles.liveDot} />
+            LIVE DATABASE
+            <span>
+              No simulated performance.
+            </span>
+          </div>
+        </section>
+
+        <section className={styles.paidSection}>
+          <div className={styles.paidCopy}>
+            <span className={styles.kicker}>
+              MEMBERS ONLY
+            </span>
+
+            <h2>
+              Unlock the full board.
+            </h2>
+
+            <p>
+              Paid members get access
+              to the complete qualifying
+              daily board across O/U 2.5,
+              BTTS, 1X2 and Double Chance.
+            </p>
+
+            <div className={styles.marketChips}>
+              <span>
+                O/U 2.5
+              </span>
+              <span>
+                BTTS
+              </span>
+              <span>
+                1X2
+              </span>
+              <span>
+                DOUBLE CHANCE
+              </span>
+            </div>
+
+            <Link
+              href="/subscription"
+              className={styles.primaryButton}
+            >
+              SEE MEMBERSHIP
+            </Link>
+          </div>
+
+          <div className={styles.pricePanel}>
+            <div className={styles.priceTop}>
+              <span>
+                LOW-FRICTION ACCESS
+              </span>
+              <strong>
+                в‚¬2.49
+              </strong>
+              <small>
+                DAILY PASS
+              </small>
+            </div>
+
+            <div className={styles.priceRows}>
+              <div>
+                <span>
+                  WEEKLY
+                </span>
+                <strong>
+                  в‚¬6.99
+                </strong>
+              </div>
+              <div>
+                <span>
+                  MONTHLY
+                </span>
+                <strong>
+                  в‚¬17.99
+                </strong>
+              </div>
+              <div>
+                <span>
+                  YEARLY
+                </span>
+                <strong>
+                  в‚¬119.99
+                </strong>
+              </div>
+            </div>
+
+            <div className={styles.priceNote}>
+              SAME PAID PICKS.
+              DIFFERENT ACCESS PERIODS.
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.howSection}>
+          <div>
+            <span>
+              01
+            </span>
+            <strong>
+              MODEL ANALYSES
+            </strong>
+            <p>
+              Fixtures are processed
+              using the live data engine.
+            </p>
+          </div>
+
+          <div>
+            <span>
+              02
+            </span>
+            <strong>
+              PICKS PUBLISH
+            </strong>
+            <p>
+              Published selections are
+              stored and never rewritten.
+            </p>
+          </div>
+
+          <div>
+            <span>
+              03
+            </span>
+            <strong>
+              RESULTS SETTLE
+            </strong>
+            <p>
+              Real outcomes feed the
+              public statistics record.
+            </p>
+          </div>
+        </section>
+
+        <nav
+          className={styles.mobileBottomNav}
+          aria-label="Mobile navigation"
+        >
+          <Link href="/" className={styles.mobileBottomItem}>
+            <span>вЊ‚</span>
+            HOME
+          </Link>
+
+          <Link href="/today" className={styles.mobileBottomItem}>
+            <span>2</span>
+            FREE
+          </Link>
+
+          <Link href="/paid-picks" className={styles.mobileBottomItem}>
+            <span>в…</span>
+            PAID
+          </Link>
+
+          <Link href="/statistics" className={styles.mobileBottomItem}>
+            <span>%</span>
+            STATS
+          </Link>
+
+          <Link
+            href={isSignedIn ? "/account" : "/sign-in"}
+            className={styles.mobileBottomItem}
+          >
+            <span>в—Џ</span>
+            {isSignedIn ? "ACCOUNT" : "SIGN IN"}
+          </Link>
+        </nav>
+        <footer className={styles.footer}>
+          <div>
+            <strong>
+              THE UNDER OVER CLUB
+            </strong>
+            <span>
+              Football predictions are
+              not guarantees. Bet
+              responsibly.
+            </span>
+          </div>
+
+          <nav>
+            <Link href="/today">
+              Free Picks
+            </Link>
+            <Link href="/statistics">
+              Statistics
+            </Link>
+            <Link href="/subscription">
+              Membership
+            </Link>
+            <Link
+              href={
+                isSignedIn
+                  ? "/account"
+                  : "/sign-in"
+              }
+            >
+              {isSignedIn
+                ? "Account"
+                : "Sign In"}
+            </Link>
+                      <Link href="/terms">
+              Terms
+            </Link>
+            <Link href="/privacy">
+              Privacy
+            </Link>
+            <Link href="/responsible-play">
+              Responsible Play
+            </Link>
+            <Link href="/contact">
+              Contact
+            </Link></nav>
+        </footer>
+      </div>
+    </main>
+  );
+}

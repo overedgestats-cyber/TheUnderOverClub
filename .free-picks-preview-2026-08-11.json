@@ -1,0 +1,41 @@
+﻿{
+    "ok":  true,
+    "created":  false,
+    "immutable":  false,
+    "committed":  false,
+    "date":  "2026-08-11",
+    "pickCount":  2,
+    "mode":  "dry_run",
+    "fingerprint":  "8cfe0756e73606c43eac558c014eec5dfbec84c74b289addf5c5d49808b64ce5",
+    "message":  "Preview is valid. Nothing was stored. Use this fingerprint to protect the reviewed slate on commit.",
+    "picks":  [
+                  {
+                      "rank":  1,
+                      "fixtureId":  1598827,
+                      "home":  "Bodo/Glimt",
+                      "away":  "Union St. Gilloise",
+                      "competition":  "UEFA Champions League",
+                      "kickoffAt":  "2026-08-11T16:00:00+00:00",
+                      "selection":  "Over 2.5",
+                      "modelProbabilityPct":  83,
+                      "confidencePct":  90,
+                      "priorityBand":  "75_plus",
+                      "odds":  1.44,
+                      "oddsSource":  "bet365"
+                  },
+                  {
+                      "rank":  2,
+                      "fixtureId":  1605325,
+                      "home":  "Laagri",
+                      "away":  "Tamper",
+                      "competition":  "Cup",
+                      "kickoffAt":  "2026-08-11T15:00:00+00:00",
+                      "selection":  "Over 2.5",
+                      "modelProbabilityPct":  80,
+                      "confidencePct":  87,
+                      "priorityBand":  "75_plus",
+                      "odds":  null,
+                      "oddsSource":  null
+                  }
+              ]
+}

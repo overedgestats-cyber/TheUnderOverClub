@@ -1,0 +1,486 @@
+.dashboard {
+  display: grid;
+  gap: 8px;
+}
+
+.heroAccent {
+  color: var(--retro-green-bright);
+}
+
+.performanceStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 3px solid var(--retro-line);
+  background: #05080b;
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.performanceItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-height: 112px;
+  padding: 14px 20px;
+  border-right: 2px solid var(--retro-line-soft);
+}
+
+.performanceItem:last-child { border-right: 0; }
+
+.performanceItem > span {
+  flex: 0 0 auto;
+  font-size: 38px;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.performanceItem strong,
+.performanceItem span,
+.performanceItem small {
+  display: block;
+}
+
+.performanceItem strong {
+  font-size: 29px;
+  line-height: 1;
+}
+
+.performanceItem div > span {
+  margin-top: 7px;
+  color: #d1d2d4;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.performanceItem small {
+  margin-top: 6px;
+  color: #6c747d;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.metricIconGreen,
+.performanceItem:nth-child(1) strong { color: var(--retro-green-bright); }
+
+.metricIconGold,
+.performanceItem:nth-child(2) strong { color: var(--retro-yellow); }
+
+.metricIconBlue,
+.performanceItem:nth-child(3) strong { color: var(--retro-blue); }
+
+.metricIconPurple,
+.performanceItem:nth-child(4) strong { color: var(--retro-purple); }
+
+.panel {
+  border: 3px solid var(--retro-line);
+  background: #06090c;
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.panelTitle {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 9px 14px;
+  border-bottom: 3px solid var(--retro-line);
+}
+
+.panelTitle > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panelTitle span {
+  color: var(--retro-yellow);
+  font-size: 21px;
+}
+
+.panelTitle h2 {
+  margin: 0;
+  color: var(--retro-yellow);
+  font-size: 19px;
+  letter-spacing: 0.06em;
+}
+
+.panelTitle a {
+  padding: 8px 11px;
+  border: 2px solid #4a7d21;
+  background: #0e1b0d;
+  color: var(--retro-green-bright);
+  text-decoration: none;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.pickDeck {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px;
+}
+
+.pickCard,
+.lockedCard {
+  min-width: 0;
+  padding: 12px;
+  border: 3px solid #4f9220;
+  background: linear-gradient(180deg, #071009, #050708);
+  box-shadow: inset 0 0 0 1px #172318, 3px 3px 0 #000;
+}
+
+.pickUnder {
+  border-color: var(--retro-red);
+}
+
+.pickUnder .pickSelection,
+.pickUnder .cardHeader strong {
+  color: var(--retro-red);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--retro-green-bright);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.cardHeader strong {
+  padding: 4px 6px;
+  border: 1px solid currentColor;
+  color: var(--retro-purple);
+  font-size: 8px;
+}
+
+.match {
+  margin-top: 18px;
+}
+
+.match small {
+  display: block;
+  margin-bottom: 12px;
+  overflow: hidden;
+  color: #717a83;
+  font-size: 7px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamRow {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+}
+
+.teamBadge {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #6c747d;
+  background: #11161b;
+  color: var(--retro-cream);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.teamRow strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vs {
+  margin: 5px 0 5px 42px;
+  color: #606871;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.pickSelection {
+  margin-top: 15px;
+  color: var(--retro-green-bright);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.cardMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 14px;
+  border-top: 2px solid var(--retro-line-soft);
+  border-bottom: 2px solid var(--retro-line-soft);
+}
+
+.cardMetrics div {
+  padding: 11px 5px;
+}
+
+.cardMetrics div + div {
+  border-left: 2px solid var(--retro-line-soft);
+}
+
+.cardMetrics span {
+  display: block;
+  color: #747b82;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.cardMetrics strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 17px;
+}
+
+.progress {
+  height: 12px;
+  margin-top: 12px;
+  background: repeating-linear-gradient(90deg, #20252a 0 11px, #050608 11px 14px);
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--retro-green) 0 11px,
+    #0b1708 11px 14px
+  );
+}
+
+.pickUnder .progress span {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--retro-red) 0 11px,
+    #190707 11px 14px
+  );
+}
+
+.pickButton {
+  display: block;
+  margin-top: 13px;
+  padding: 10px;
+  border: 2px solid var(--retro-green);
+  background: #12320d;
+  color: var(--retro-green-bright);
+  text-align: center;
+  text-decoration: none;
+  font-size: 9px;
+  font-weight: 900;
+  box-shadow: inset 0 -4px 0 #0a1c07;
+}
+
+.lockedCard {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 302px;
+  border-color: #63316f;
+  background: repeating-linear-gradient(135deg, #0a080d 0 12px, #0d0a10 12px 24px);
+  text-align: center;
+}
+
+.lockIcon {
+  color: var(--retro-purple);
+  font-size: 35px;
+}
+
+.lockedCard > span {
+  margin-top: 11px;
+  color: var(--retro-purple);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.lockedCard > strong {
+  margin-top: 6px;
+  color: var(--retro-cream);
+  font-size: 17px;
+}
+
+.lockedCard p {
+  margin: 10px 0;
+  color: #737780;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.lockedCard a {
+  margin-top: 5px;
+  padding: 9px 18px;
+  border: 2px solid var(--retro-purple);
+  background: #25102d;
+  color: #df78ff;
+  text-decoration: none;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.widgetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  gap: 8px;
+}
+
+.widget {
+  min-height: 170px;
+  padding: 15px;
+  border: 3px solid var(--retro-line);
+  background: #06090c;
+  box-shadow: inset 0 0 0 2px #020304, 4px 4px 0 #000;
+}
+
+.widgetTitleGreen,
+.widgetTitleGold,
+.widgetTitlePurple {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.widgetTitleGreen { color: var(--retro-green-bright); }
+.widgetTitleGold { color: var(--retro-yellow); }
+.widgetTitlePurple { color: var(--retro-purple); }
+
+.hearts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.hearts span {
+  color: var(--retro-red);
+  font-size: 34px;
+  text-shadow: 3px 3px 0 #69090b;
+}
+
+.hearts strong {
+  margin-left: auto;
+  color: var(--retro-green-bright);
+  font-size: 18px;
+}
+
+.widget p {
+  margin: 13px 0 0;
+  color: #787f87;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.matchList {
+  margin-top: 10px;
+}
+
+.matchList > div {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--retro-line-soft);
+}
+
+.matchList span {
+  color: #b9bec3;
+  font-size: 9px;
+}
+
+.matchList p {
+  margin: 0;
+  overflow: hidden;
+  color: #c1c3c6;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matchList strong {
+  color: #818992;
+  font-size: 8px;
+}
+
+.noMatches {
+  padding: 22px 0;
+  text-align: center;
+}
+
+.crown {
+  margin-top: 12px;
+  color: var(--retro-yellow);
+  font-size: 38px;
+  text-shadow: 3px 3px 0 #7d4e00;
+}
+
+.membershipPrice {
+  display: block;
+  color: var(--retro-purple);
+  font-size: 19px;
+}
+
+.widgetButton {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 9px 14px;
+  border: 2px solid var(--retro-yellow);
+  background: #2a2104;
+  color: var(--retro-yellow);
+  text-decoration: none;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+@media (max-width: 1250px) {
+  .pickDeck { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .performanceStrip { grid-template-columns: repeat(2, 1fr); }
+  .performanceItem:nth-child(2) { border-right: 0; }
+  .performanceItem:nth-child(-n + 2) {
+    border-bottom: 2px solid var(--retro-line-soft);
+  }
+  .pickDeck { grid-template-columns: 1fr; }
+  .lockedCard { min-height: 190px; }
+  .widgetGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 470px) {
+  .performanceStrip { grid-template-columns: 1fr; }
+
+  .performanceItem {
+    border-right: 0;
+    border-bottom: 2px solid var(--retro-line-soft);
+  }
+
+  .performanceItem:last-child { border-bottom: 0; }
+
+  .panelTitle {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* v2.5 — real club badges on Home Free Pick cards */
+.teamLogo {
+  display: block;
+  width: 30px;
+  height: 30px;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}

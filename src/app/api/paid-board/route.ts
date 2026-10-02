@@ -1,80 +1,61 @@
-﻿import {
+﻿import type {
   NextRequest,
-  NextResponse,
 } from "next/server";
 
-import { getPaidBoard } from "@/lib/paid-board/get-paid-board";
+import {
+  requirePaidApiAccess,
+} from "@/lib/auth/entitlement";
+import {
+  getPaidPicks,
+} from "@/lib/paid-picks/public-paid-picks";
 import {
   getSofiaDate,
-  isValidDateString,
 } from "@/lib/time/sofia";
 
-export const dynamic = "force-dynamic";
+export const dynamic =
+  "force-dynamic";
 
 export async function GET(
-  request: NextRequest,
+  request:
+    NextRequest,
 ) {
-  try {
-    const requestedDate =
-      request.nextUrl.searchParams.get(
-        "date",
-      );
+  const date =
+    request.nextUrl
+      .searchParams
+      .get("date") ??
+    getSofiaDate();
 
-    const date =
-      requestedDate ?? getSofiaDate();
-
-    if (!isValidDateString(date)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Date must use YYYY-MM-DD format",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const board =
-      await getPaidBoard(date);
-
-    if (!board) {
-      return NextResponse.json(
-        {
-          ok: true,
-          date,
-          published: false,
-          leagues: [],
-        },
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
       date,
-      published: true,
-      board,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Unknown paid board read error";
-
-    console.error(
-      "Paid board read failed:",
-      error,
-    );
-
-    return NextResponse.json(
+    )
+  ) {
+    return Response.json(
       {
         ok: false,
-        error: message,
+        error:
+          "Date must use YYYY-MM-DD format",
       },
       {
-        status: 500,
+        status: 400,
       },
     );
   }
+
+  const access =
+    await requirePaidApiAccess(
+      date,
+    );
+
+  if (!access.ok) {
+    return access.response;
+  }
+
+  return Response.json({
+    ok: true,
+    board:
+      await getPaidPicks(
+        date,
+      ),
+  });
 }

@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import {
@@ -131,7 +131,7 @@ async function getPaidFixturesForDate(
     );
   }
 
-  return ((data ?? []) as FixtureRow[])
+  return ((data ?? []) as unknown as FixtureRow[])
     .filter(
       (fixture) =>
         getSofiaDate(
@@ -172,7 +172,7 @@ export async function publishPaidBoard(
   }
 
   const existingRun =
-    existingRunData as ExistingRun | null;
+    existingRunData as unknown as ExistingRun | null;
 
   if (
     existingRun?.status === "published"
@@ -193,8 +193,42 @@ export async function publishPaidBoard(
     };
   }
 
-  const fixtures =
+  const fixturesForDate =
     await getPaidFixturesForDate(date);
+
+  const publicationCutoffMs =
+    Date.now();
+
+  const fixtures =
+    fixturesForDate.filter(
+      (fixture) => {
+        const kickoffAt =
+          new Date(
+            fixture.kickoff_at,
+          ).getTime();
+
+        return (
+          Number.isFinite(
+            kickoffAt,
+          ) &&
+          kickoffAt >
+            publicationCutoffMs
+        );
+      },
+    );
+
+  const excludedStartedFixtureCount =
+    fixturesForDate.length -
+    fixtures.length;
+
+  if (
+    excludedStartedFixtureCount >
+    0
+  ) {
+    console.warn(
+      `[Paid board] Excluded ${excludedStartedFixtureCount} already-started/invalid-kickoff fixtures from ${date} before immutable publication.`,
+    );
+  }
 
   const deadlineAt =
     getSofiaPublicationDeadline(date);
@@ -217,6 +251,8 @@ export async function publishPaidBoard(
           publicationTime: "07:30",
           timezone: "Europe/Sofia",
           stage: "fixture_board_only",
+          preKickoffOnly: true,
+          excludedStartedFixtureCount,
         },
         fixture_count: 0,
         recommendation_count: 0,
@@ -247,10 +283,16 @@ export async function publishPaidBoard(
     }
   }
 
-  const boardRows = buildBoardRows(
-    publicationRunId,
-    fixtures,
+ if (!publicationRunId) {
+  throw new Error(
+    "Paid publication run ID was not created",
   );
+}
+
+const boardRows = buildBoardRows(
+  publicationRunId,
+  fixtures,
+);
 
   if (boardRows.length > 0) {
     const { error } = await supabase
@@ -295,19 +337,31 @@ export async function publishPaidBoard(
     );
   }
 
+  const publishedRunRow =
+    publishedRun as unknown as {
+      id: string;
+      fixture_count: number;
+      recommendation_count: number;
+      published_at: string | null;
+      published_late: boolean | null;
+    };
+
   return {
     created: true,
     immutable: true,
     publicationRunId:
-      publishedRun.id,
+      publishedRunRow.id,
     date,
     fixtureCount:
-      publishedRun.fixture_count,
+      publishedRunRow.fixture_count,
     recommendationCount:
-      publishedRun.recommendation_count,
+      publishedRunRow.recommendation_count,
     publishedAt:
-      publishedRun.published_at,
+      publishedRunRow.published_at,
     publishedLate:
-      publishedRun.published_late ?? false,
+      publishedRunRow.published_late ?? false,
+    excludedStartedFixtureCount,
   };
 }
+
+
