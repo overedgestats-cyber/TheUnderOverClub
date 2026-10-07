@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import styles from "./RetroHero.module.css";
 
 type Props = {
@@ -13,29 +15,24 @@ export default function RetroHero({
   title,
   subtitle,
   badge,
-  variant = "green",
 }: Props) {
   return (
-    <section className={`${styles.hero} ${styles[variant]}`}>
-      <div className={styles.stars} />
-      <div className={styles.floodlightLeft} />
-      <div className={styles.floodlightRight} />
+    <section className={styles.hero}>
+      <Image
+        className={styles.heroImage}
+        src="/brand/euro-arcade-bowl.jpg"
+        alt="Retro pixel-art European football stadium at night with arcade scoreboards and The Under Over Club slogan"
+        width={1536}
+        height={1024}
+        priority
+        sizes="(max-width: 900px) 100vw, calc(100vw - 280px)"
+      />
 
-      <div className={styles.copy}>
-        <span className={styles.eyebrow}>{eyebrow}</span>
+      <div className={styles.seoCopy}>
+        <span>{eyebrow}</span>
         <h1>{title}</h1>
         <p>{subtitle}</p>
-
-        {badge ? <div className={styles.badge}>{badge}</div> : null}
-      </div>
-
-      <div className={styles.standBack} />
-      <div className={styles.standFront} />
-
-      <div className={styles.pitch}>
-        <span className={styles.midline} />
-        <span className={styles.centerCircle} />
-        <span className={styles.goal} />
+        {badge ? <div>{badge}</div> : null}
       </div>
     </section>
   );

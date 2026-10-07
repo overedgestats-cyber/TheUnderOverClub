@@ -1,21 +1,25 @@
-THE UNDER OVER CLUB - ROI STATISTICS UPDATE
+THE UNDER OVER CLUB — RETRO HERO REPLACEMENT
 
-Replace these files in your project with the files from this package:
+This replaces the current generated stadium hero with the supplied Euro Arcade Bowl image everywhere the RetroHero component is used.
 
-1. src/components/statistics/StatisticsDashboard.tsx
-   - Removes ALL PICKS tab/view
-   - Keeps FREE PICKS and PAID PICKS
-   - Removes WIN RATE / WIN % everywhere in the Statistics dashboard
-   - Makes ROI the first/main metric
-   - Replaces WIN % table columns with SETTLED
+FILES:
+1. NEW:
+   public/brand/euro-arcade-bowl.jpg
 
-2. src/components/retro/RetroShell.tsx
-   - Removes WIN RATE from the global top HUD
-   - Makes ROI the first HUD metric
-   - Adds SETTLED PICKS instead
+2. REPLACE:
+   src/components/retro/RetroHero.tsx
+   src/components/retro/RetroHero.module.css
 
-3. src/app/statistics/layout.tsx
-   - Removes "Win Rate" from Statistics page SEO metadata
-   - Focuses metadata on ROI and transparent results
+INSTALL:
+- Extract this ZIP into:
+  C:\Users\Marty\Desktop\theunderoverclub
+- Allow Windows to merge folders and replace the two component files.
+- Then run:
+  npm run build
+- If successful:
+  git add .
+  git commit -m "Replace site hero with Euro Arcade Bowl artwork"
+  git push origin main
 
-No settlement logic, database records, or statistics calculations are changed.
+NOTE:
+The existing page heading/title text is still kept in the HTML for SEO and accessibility, but hidden visually so it does not overlap the artwork.
