@@ -8,6 +8,8 @@ export default function robots(): MetadataRoute.Robots {
         "/",
         "/today",
         "/about",
+        "/guides",
+        "/guides/",
         "/statistics",
         "/subscription",
         "/terms",

@@ -15,6 +15,7 @@ const desktopItems = [
   { href: "/today", label: "FREE PICKS", icon: "●" },
   { href: "/paid-picks", label: "PAID PICKS", icon: "■" },
   { href: "/statistics", label: "STATS", icon: "▥" },
+  { href: "/guides", label: "GUIDES", icon: "?" },
   { href: "/game", label: "GAME", icon: "★" },
   { href: "/subscription", label: "MEMBERSHIP", icon: "◆" },
   { href: "/about", label: "ABOUT US", icon: "i" },
@@ -46,7 +47,7 @@ export default function RetroNavigation({
         desktopItems[1],
         desktopItems[2],
         desktopItems[3],
-        desktopItems[4],
+        desktopItems[5],
         accountItem,
       ]
     : [
