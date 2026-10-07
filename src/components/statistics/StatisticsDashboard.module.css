@@ -223,11 +223,107 @@
 }
 
 @media (max-width: 620px) {
+  .page,
+  .section,
+  .tabs,
+  .panel,
   .metricGrid,
-  .splitGrid { grid-template-columns: 1fr; }
+  .metricCard {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
 
-  .marketTable { overflow-x: auto; }
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 7px;
+    overflow: visible;
+  }
+
+  .tab,
+  .tabActive {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .section {
+    padding: 7px;
+  }
+
+  .sectionHeader {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 8px;
+    padding: 6px 4px 10px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 18px;
+  }
+
+  .recordBadge {
+    width: fit-content;
+    max-width: 100%;
+    font-size: 7px;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .metricCard {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    min-height: 68px;
+    padding: 9px 11px;
+    gap: 9px;
+  }
+
+  .metricIcon {
+    font-size: 22px;
+  }
+
+  .metricLabel {
+    font-size: 6px;
+  }
+
+  .metricValue {
+    margin-top: 3px;
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .metricCard small {
+    margin-top: 4px;
+    font-size: 6px;
+    line-height: 1.25;
+  }
+
+  .splitGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketTable {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
   .tableHeader,
-  .tableRow { min-width: 560px; }
+  .tableRow {
+    min-width: 520px;
+  }
+
+  .disclaimer {
+    font-size: 7px;
+  }
 }

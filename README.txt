@@ -1,34 +1,31 @@
-THE UNDER OVER CLUB — STATS MOBILE FIX
+THE UNDER OVER CLUB — STATS MOBILE V2
 
-This fixes the mobile Stats page shown in your screenshot.
+This is the corrected phone layout for the Statistics page.
 
-WHAT IT CHANGES
-- Hides the large desktop HUD on phones (<=700px).
-- Removes the huge empty black block at the top.
-- Keeps the stadium hero directly below the top of the page.
-- Keeps Free/Paid tabs full-width and easy to tap.
-- Keeps the six Statistics KPI cards in a compact 2-column grid.
-- Reduces KPI card height and font sizes on phones.
-- Keeps tables horizontally scrollable rather than breaking the layout.
+WHY THE PREVIOUS VERSION LOOKED WRONG
+The 2-column KPI layout was still too wide on your iPhone viewport. It caused the
+right column and the PAID PICKS tab to extend beyond the screen.
+
+THIS VERSION
+- Makes FREE PICKS / PAID PICKS exactly 50/50 across the screen.
+- Uses one compact KPI row per metric instead of two wide cards.
+- Each KPI row is only about 68px tall, so the page does not become huge.
+- Stops ROI / Units / Picks cards from clipping off the right side.
+- Keeps market/month tables swipeable horizontally.
+- Keeps the global HUD hidden on phones.
 - Desktop remains unchanged.
 
-FILES
-1. REPLACE:
-   src/app/globals.css
-2. NEW:
-   src/app/mobile-stats-fix.css
-
-INSTALL
-Extract into:
-C:\Users\Marty\Desktop\theunderoverclub
+REPLACE
+src/components/statistics/StatisticsDashboard.module.css
+src/app/mobile-stats-fix.css
 
 Then:
 npm run build
 
-If successful:
+Deploy:
 git add .
-git commit -m "Fix mobile statistics layout"
+git commit -m "Fix statistics mobile layout v2"
 git push origin main
 
-If GitHub still errors:
+Or if GitHub still errors:
 npx vercel --prod
