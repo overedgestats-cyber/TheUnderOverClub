@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import RetroHero from "@/components/retro/RetroHero";
@@ -281,21 +282,32 @@ export default function StatisticsDashboard({ free, paid }: Props) {
         variant="blue"
       />
 
-      <nav className={styles.tabs} aria-label="Statistics views">
-        {[
-          ["free", "FREE PICKS"],
-          ["paid", "PAID PICKS"],
-        ].map(([key, label]) => (
-          <button
-            type="button"
-            className={view === key ? styles.tabActive : styles.tab}
-            onClick={() => setView(key as "free" | "paid")}
-            key={key}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+      <div className={styles.statsActions}>
+        <nav className={styles.tabs} aria-label="Statistics views">
+          {[
+            ["free", "FREE PICKS"],
+            ["paid", "PAID PICKS"],
+          ].map(([key, label]) => (
+            <button
+              type="button"
+              className={view === key ? styles.tabActive : styles.tab}
+              onClick={() => setView(key as "free" | "paid")}
+              key={key}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <Link
+          className={styles.leagueStatsLink}
+          href="/stats/over-2-5-leagues"
+        >
+          <span aria-hidden="true">▲</span>
+          LEAGUE STATS
+          <small>O2.5 · U2.5 · BTTS</small>
+        </Link>
+      </div>
 
       {view === "free" ? (
         <PerformanceSection

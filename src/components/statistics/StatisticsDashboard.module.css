@@ -327,3 +327,60 @@
     font-size: 7px;
   }
 }
+
+/* LEAGUE STATS NAVIGATION */
+.statsActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.statsActions .tabs {
+  min-width: 0;
+}
+
+.leagueStatsLink {
+  min-width: 190px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 9px 13px;
+  border: 3px solid #498d1b;
+  background: #10200d;
+  color: var(--retro-green-bright);
+  text-decoration: none;
+  font-size: 8px;
+  font-weight: 900;
+  box-shadow:
+    inset 0 0 0 2px #020304,
+    4px 4px 0 #000;
+}
+
+.leagueStatsLink > span {
+  grid-row: 1 / 3;
+  font-size: 18px;
+}
+
+.leagueStatsLink > small {
+  color: #87918a;
+  font-size: 6px;
+}
+
+.leagueStatsLink:hover {
+  background: #173010;
+}
+
+@media (max-width: 700px) {
+  .statsActions {
+    grid-template-columns: 1fr;
+  }
+
+  .leagueStatsLink {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+  }
+}
