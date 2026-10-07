@@ -13,7 +13,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Football Betting Guides & Analysis",
   description:
-    "Learn Over/Under 2.5 goals, BTTS, football betting odds, implied probability, value betting, Double Chance, 1X2 and betting ROI with practical data-led guides.",
+    "Football betting guides covering Over/Under goals, BTTS, xG, odds, implied probability, fair odds, value betting, bankroll management and ROI.",
   alternates: {
     canonical: "/guides",
   },
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "The Under Over Club",
     title: "Football Betting Guides & Analysis",
     description:
-      "Practical football betting guides built around goals, probability, odds, value and ROI.",
+      "Practical football betting guides built around goals, statistics, probability, odds, value and ROI.",
     url: "/guides",
   },
 };
@@ -61,26 +61,41 @@ export default function GuidesPage() {
         eyebrow="THE UNDER OVER CLUB ACADEMY"
         title={<>FOOTBALL BETTING GUIDES</>}
         subtitle="LEARN THE MARKETS. UNDERSTAND THE NUMBERS. FIND THE VALUE."
-        badge="10 GUIDES ONLINE"
+        badge={`${guideArticles.length} GUIDES ONLINE`}
         variant="gold"
       />
 
       <section className={styles.statusStrip}>
-        <div>
-          <span className={styles.green}>▥</span>
-          <p><small>GOALS</small><strong>3 GUIDES</strong></p>
-        </div>
-        <div>
-          <span className={styles.gold}>◆</span>
-          <p><small>BETTING BASICS</small><strong>4 GUIDES</strong></p>
-        </div>
-        <div>
-          <span className={styles.purple}>◎</span>
-          <p><small>SMARTER BETTING</small><strong>3 GUIDES</strong></p>
-        </div>
+        {guideCategories.map((category, index) => {
+          const count = guideArticles.filter(
+            (article) => article.category === category,
+          ).length;
+
+          const icon = index === 0 ? "▥" : index === 1 ? "◆" : "◎";
+          const tone =
+            index === 0
+              ? styles.green
+              : index === 1
+                ? styles.gold
+                : styles.purple;
+
+          return (
+            <div key={category}>
+              <span className={tone}>{icon}</span>
+              <p>
+                <small>{category}</small>
+                <strong>{count} GUIDES</strong>
+              </p>
+            </div>
+          );
+        })}
+
         <div>
           <span className={styles.blue}>▶</span>
-          <p><small>NEXT STEP</small><strong>CHECK THE DATA</strong></p>
+          <p>
+            <small>NEXT STEP</small>
+            <strong>CHECK THE DATA</strong>
+          </p>
         </div>
       </section>
 

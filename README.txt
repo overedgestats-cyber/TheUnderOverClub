@@ -1,31 +1,67 @@
-THE UNDER OVER CLUB — STATS MOBILE V2
+THE UNDER OVER CLUB — SEO GUIDES BATCH 2
 
-This is the corrected phone layout for the Statistics page.
+This adds 10 more SEO guides, taking the site from 10 to 20 guides.
 
-WHY THE PREVIOUS VERSION LOOKED WRONG
-The 2-column KPI layout was still too wide on your iPhone viewport. It caused the
-right column and the PAID PICKS tab to extend beyond the screen.
+NEW GUIDES
+11. How to Predict Over 2.5 Goals Using Statistics
+12. Best Leagues for Over 2.5 Goals
+13. What Does Over 1.5 Goals Mean?
+14. What Does Over 3.5 Goals Mean?
+15. BTTS Betting Strategy: What Statistics Matter?
+16. BTTS and Over 2.5 Goals Explained
+17. What Is xG in Football?
+18. How to Calculate Fair Betting Odds
+19. What Is Bookmaker Margin and Overround?
+20. Football Betting Bankroll Management
 
-THIS VERSION
-- Makes FREE PICKS / PAID PICKS exactly 50/50 across the screen.
-- Uses one compact KPI row per metric instead of two wide cards.
-- Each KPI row is only about 68px tall, so the page does not become huge.
-- Stops ROI / Units / Picks cards from clipping off the right side.
-- Keeps market/month tables swipeable horizontally.
-- Keeps the global HUD hidden on phones.
-- Desktop remains unchanged.
+NEW URLS
+/guides/how-to-predict-over-2-5-goals
+/guides/best-leagues-over-2-5-goals
+/guides/over-1-5-goals
+/guides/over-3-5-goals
+/guides/btts-strategy
+/guides/btts-over-2-5
+/guides/xg-expected-goals
+/guides/fair-betting-odds
+/guides/bookmaker-margin-overround
+/guides/bankroll-management
 
 REPLACE
-src/components/statistics/StatisticsDashboard.module.css
-src/app/mobile-stats-fix.css
+src/lib/guides/articles.ts
+src/app/guides/page.tsx
+
+IMPORTANT
+You do NOT need to edit sitemap.ts.
+Your sitemap already builds guide URLs from guideArticles, so these 10 new pages
+will automatically appear in /sitemap.xml after deployment.
+
+The Guides hub now calculates:
+- total guides automatically
+- category guide counts automatically
+
+INSTALL
+Extract into:
+C:\Users\Marty\Desktop\theunderoverclub
 
 Then:
 npm run build
 
-Deploy:
+If successful:
 git add .
-git commit -m "Fix statistics mobile layout v2"
+git commit -m "Add 10 more SEO football guides"
 git push origin main
 
-Or if GitHub still errors:
+If GitHub still returns the remote error:
 npx vercel --prod
+
+AFTER DEPLOYMENT
+Check:
+https://www.theunderoverclub.com/guides
+https://www.theunderoverclub.com/sitemap.xml
+
+Then request indexing in Search Console for the strongest new pages first:
+1. /guides/how-to-predict-over-2-5-goals
+2. /guides/best-leagues-over-2-5-goals
+3. /guides/xg-expected-goals
+4. /guides/btts-strategy
+5. /guides/fair-betting-odds
