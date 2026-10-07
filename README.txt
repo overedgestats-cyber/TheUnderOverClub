@@ -1,67 +1,69 @@
-THE UNDER OVER CLUB — SEO GUIDES BATCH 2
+THE UNDER OVER CLUB — LIVE OVER 2.5 LEAGUE SEO PAGE
 
-This adds 10 more SEO guides, taking the site from 10 to 20 guides.
+NEW LIVE PAGE
+https://www.theunderoverclub.com/stats/over-2-5-leagues
 
-NEW GUIDES
-11. How to Predict Over 2.5 Goals Using Statistics
-12. Best Leagues for Over 2.5 Goals
-13. What Does Over 1.5 Goals Mean?
-14. What Does Over 3.5 Goals Mean?
-15. BTTS Betting Strategy: What Statistics Matter?
-16. BTTS and Over 2.5 Goals Explained
-17. What Is xG in Football?
-18. How to Calculate Fair Betting Odds
-19. What Is Bookmaker Margin and Overround?
-20. Football Betting Bankroll Management
+WHAT IT DOES
+- Reads completed current-season fixtures already stored in your Supabase "fixtures" table.
+- Does NOT make fresh API-Football calls on every page view.
+- Ranks tracked European leagues by Over 2.5 percentage.
+- Shows:
+  - completed matches
+  - Over 2.5 %
+  - Under 2.5 %
+  - average total goals
+  - BTTS %
+  - average home goals
+  - average away goals
+- Minimum 5 completed matches before a league is displayed.
+- Cached for 12 hours.
+- Automatically rolls the European season label each July.
+- Includes Dataset + ItemList structured data for SEO.
+- Added to sitemap.xml with daily change frequency.
+- Existing "Best Leagues for Over 2.5 Goals" guide now links to the live page.
 
-NEW URLS
-/guides/how-to-predict-over-2-5-goals
-/guides/best-leagues-over-2-5-goals
-/guides/over-1-5-goals
-/guides/over-3-5-goals
-/guides/btts-strategy
-/guides/btts-over-2-5
-/guides/xg-expected-goals
-/guides/fair-betting-odds
-/guides/bookmaker-margin-overround
-/guides/bankroll-management
+FILES
+NEW:
+src/lib/seo-stats/over25-leagues.ts
+src/app/stats/over-2-5-leagues/page.tsx
+src/app/stats/over-2-5-leagues/page.module.css
 
-REPLACE
-src/lib/guides/articles.ts
-src/app/guides/page.tsx
+REPLACE:
+src/app/sitemap.ts
+src/app/guides/[slug]/page.tsx
+
+NO DATABASE MIGRATION IS REQUIRED.
+NO NEW ENVIRONMENT VARIABLES ARE REQUIRED.
 
 IMPORTANT
-You do NOT need to edit sitemap.ts.
-Your sitemap already builds guide URLs from guideArticles, so these 10 new pages
-will automatically appear in /sitemap.xml after deployment.
-
-The Guides hub now calculates:
-- total guides automatically
-- category guide counts automatically
+The live ranking depends on your existing daily fixture import. If a league has
+not been imported into the fixtures table, it simply will not appear rather than
+showing fake data.
 
 INSTALL
-Extract into:
-C:\Users\Marty\Desktop\theunderoverclub
+1. Extract into:
+   C:\Users\Marty\Desktop\theunderoverclub
+2. Allow Windows to merge/replace files.
+3. Run:
+   npm run build
+4. Then:
+   npm run dev
+5. Open:
+   http://localhost:3000/stats/over-2-5-leagues
 
-Then:
-npm run build
-
-If successful:
+DEPLOY
 git add .
-git commit -m "Add 10 more SEO football guides"
+git commit -m "Add live Over 2.5 league statistics page"
 git push origin main
 
-If GitHub still returns the remote error:
+If GitHub still gives the remote error:
 npx vercel --prod
 
 AFTER DEPLOYMENT
-Check:
-https://www.theunderoverclub.com/guides
-https://www.theunderoverclub.com/sitemap.xml
-
-Then request indexing in Search Console for the strongest new pages first:
-1. /guides/how-to-predict-over-2-5-goals
-2. /guides/best-leagues-over-2-5-goals
-3. /guides/xg-expected-goals
-4. /guides/btts-strategy
-5. /guides/fair-betting-odds
+1. Open:
+   https://www.theunderoverclub.com/stats/over-2-5-leagues
+2. Confirm the table has real league data.
+3. Open:
+   https://www.theunderoverclub.com/sitemap.xml
+4. In Google Search Console request indexing for:
+   https://www.theunderoverclub.com/stats/over-2-5-leagues

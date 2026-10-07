@@ -22,6 +22,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/today`, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/statistics`, changeFrequency: "daily", priority: 0.8 },
+    {
+      url: `${base}/stats/over-2-5-leagues`,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
     { url: `${base}/subscription`, changeFrequency: "monthly", priority: 0.8 },
     ...guidePages,
     { url: `${base}/about`, changeFrequency: "monthly", priority: 0.7 },

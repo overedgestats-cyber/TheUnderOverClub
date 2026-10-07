@@ -163,6 +163,23 @@ export default async function GuideArticlePage({
 
       <div className={styles.layout}>
         <article className={styles.article}>
+          {article.slug === "best-leagues-over-2-5-goals" ? (
+            <section>
+              <div className={styles.sectionTitle}>
+                <span>LIVE</span>
+                <h2>See the current-season league rankings</h2>
+              </div>
+              <p>
+                We now maintain a live table ranking tracked European leagues
+                by Over 2.5 percentage, average goals, BTTS rate and home/away
+                goal averages using completed matches in the live database.
+              </p>
+              <Link href="/stats/over-2-5-leagues">
+                OPEN LIVE OVER 2.5 LEAGUE STATS ▶
+              </Link>
+            </section>
+          ) : null}
+
           {article.sections.map((section, index) => (
             <section key={section.heading}>
               <div className={styles.sectionTitle}>
@@ -202,6 +219,22 @@ export default async function GuideArticlePage({
         </article>
 
         <aside className={styles.sidebar}>
+          {article.slug === "best-leagues-over-2-5-goals" ? (
+            <div className={styles.sideBox}>
+              <div className={styles.sideTitle}>
+                <span>▲</span>
+                <strong>LIVE LEAGUE STATS</strong>
+              </div>
+              <p>
+                See which tracked leagues currently have the highest Over 2.5
+                rates this season.
+              </p>
+              <Link href="/stats/over-2-5-leagues">
+                OPEN LIVE RANKING
+              </Link>
+            </div>
+          ) : null}
+
           <div className={styles.sideBox}>
             <div className={styles.sideTitle}>
               <span>●</span>
