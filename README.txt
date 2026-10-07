@@ -1,69 +1,66 @@
-THE UNDER OVER CLUB — LIVE OVER 2.5 LEAGUE SEO PAGE
+THE UNDER OVER CLUB — COMPLETE-SEASON LEAGUE STATS V2
 
-NEW LIVE PAGE
-https://www.theunderoverclub.com/stats/over-2-5-leagues
+This replaces the first League Stats calculation.
 
-WHAT IT DOES
-- Reads completed current-season fixtures already stored in your Supabase "fixtures" table.
-- Does NOT make fresh API-Football calls on every page view.
-- Ranks tracked European leagues by Over 2.5 percentage.
+WHAT WAS WRONG
+The first version used only fixtures already stored in Supabase. Because your
+daily importer did not contain every earlier match in the 2026/27 season,
+"Matches" could show incomplete numbers such as 20 or 23.
+
+WHAT THIS VERSION DOES
+- Uses API-Football's full current-season fixture list.
+- Fetches completed fixtures only.
+- Exactly 10 major European top-flight leagues are analysed:
+  Premier League
+  Bundesliga
+  Eredivisie
+  La Liga
+  Serie A
+  Ligue 1
+  Primeira Liga
+  Belgian Pro League
+  Swiss Super League
+  Süper Lig
+- Sorts those 10 leagues by Over 2.5 percentage.
 - Shows:
-  - completed matches
-  - Over 2.5 %
-  - Under 2.5 %
-  - average total goals
-  - BTTS %
-  - average home goals
-  - average away goals
-- Minimum 5 completed matches before a league is displayed.
-- Cached for 12 hours.
-- Automatically rolls the European season label each July.
-- Includes Dataset + ItemList structured data for SEO.
-- Added to sitemap.xml with daily change frequency.
-- Existing "Best Leagues for Over 2.5 Goals" guide now links to the live page.
+  Over 2.5 %
+  Under 2.5 %
+  BTTS %
+  Average goals
+  Full-season completed matches
+- Caches the full result for 12 hours.
+- Only 10 API requests are needed per cache refresh.
+- No Supabase migration and no manual backfill command required.
 
-FILES
-NEW:
+IMPORTANT
+"Matches" now means ALL completed current-season matches returned by
+API-Football for that league, not just matches previously imported by your site.
+
+REPLACE THESE FILES
 src/lib/seo-stats/over25-leagues.ts
 src/app/stats/over-2-5-leagues/page.tsx
 src/app/stats/over-2-5-leagues/page.module.css
 
-REPLACE:
-src/app/sitemap.ts
-src/app/guides/[slug]/page.tsx
-
-NO DATABASE MIGRATION IS REQUIRED.
-NO NEW ENVIRONMENT VARIABLES ARE REQUIRED.
-
-IMPORTANT
-The live ranking depends on your existing daily fixture import. If a league has
-not been imported into the fixtures table, it simply will not appear rather than
-showing fake data.
-
 INSTALL
-1. Extract into:
-   C:\Users\Marty\Desktop\theunderoverclub
-2. Allow Windows to merge/replace files.
-3. Run:
-   npm run build
-4. Then:
-   npm run dev
-5. Open:
-   http://localhost:3000/stats/over-2-5-leagues
+Extract into:
+C:\Users\Marty\Desktop\theunderoverclub
+
+Then:
+npm run build
+
+Test:
+npm run dev
+
+Open:
+http://localhost:3000/stats/over-2-5-leagues
+
+The first uncached page load can take a few seconds because it is collecting
+10 full-season league datasets. After that, the result is cached for 12 hours.
 
 DEPLOY
 git add .
-git commit -m "Add live Over 2.5 league statistics page"
+git commit -m "Use complete season data for league stats"
 git push origin main
 
-If GitHub still gives the remote error:
+If GitHub errors:
 npx vercel --prod
-
-AFTER DEPLOYMENT
-1. Open:
-   https://www.theunderoverclub.com/stats/over-2-5-leagues
-2. Confirm the table has real league data.
-3. Open:
-   https://www.theunderoverclub.com/sitemap.xml
-4. In Google Search Console request indexing for:
-   https://www.theunderoverclub.com/stats/over-2-5-leagues

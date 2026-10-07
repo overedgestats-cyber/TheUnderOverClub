@@ -148,26 +148,49 @@
   line-height: 1.35;
 }
 
-.bigPct {
+.mainRates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mainRates > div {
+  min-width: 0;
+  padding: 10px;
+  border: 2px solid #263029;
+  background: #06090c;
+}
+
+.mainRates strong,
+.mainRates span {
   display: block;
-  color: var(--retro-green-bright);
-  font-size: clamp(30px, 4vw, 48px);
+}
+
+.mainRates strong {
+  font-size: clamp(24px, 3.2vw, 38px);
   line-height: 1;
   text-shadow: 3px 3px 0 #000;
 }
 
-.bigLabel {
-  display: block;
-  margin-top: 5px;
+.mainRates span {
+  margin-top: 6px;
   color: #78818a;
-  font-size: 7px;
+  font-size: 6px;
   font-weight: 900;
+}
+
+.overBig {
+  color: var(--retro-green-bright);
+}
+
+.underBig {
+  color: var(--retro-blue);
 }
 
 .miniMetrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 18px;
+  margin-top: 12px;
   border-top: 2px solid #263029;
 }
 
@@ -199,11 +222,11 @@
 
 .tableHeader,
 .tableRow {
-  min-width: 850px;
+  min-width: 790px;
   display: grid;
   grid-template-columns:
-    45px minmax(180px, 1.6fr)
-    85px 100px 100px 85px 95px 95px;
+    45px minmax(180px, 1.7fr)
+    85px 100px 105px 85px 100px;
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
@@ -232,10 +255,6 @@
   font-size: 13px;
 }
 
-.leagueCell {
-  min-width: 0;
-}
-
 .leagueCell strong,
 .leagueCell small {
   display: block;
@@ -254,6 +273,11 @@
 
 .overPct {
   color: var(--retro-green-bright);
+  font-size: 11px;
+}
+
+.underPct {
+  color: var(--retro-blue);
   font-size: 11px;
 }
 
@@ -358,7 +382,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 7px;
-  max-width: 370px;
+  max-width: 390px;
 }
 
 .ctaLinks a {
@@ -410,7 +434,7 @@
   }
 
   .summaryStrip > div {
-    min-height: 68px;
+    min-height: 66px;
     border-right: 0;
     border-bottom: 1px solid var(--retro-line-soft);
   }
@@ -429,11 +453,11 @@
   }
 
   .podiumCard {
-    padding: 17px;
+    padding: 15px;
   }
 
-  .miniMetrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .mainRates strong {
+    font-size: 25px;
   }
 
   .cta {

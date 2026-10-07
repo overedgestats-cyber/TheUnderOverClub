@@ -2,22 +2,36 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+type ApiFixture = {
+  fixture?: {
+    id?: number;
+    date?: string;
+    status?: {
+      short?: string;
+    };
+  };
+  league?: {
+    id?: number;
+    name?: string;
+    country?: string;
+    season?: number;
+  };
+  goals?: {
+    home?: number | null;
+    away?: number | null;
+  };
+};
 
-type FixtureRow = {
-  competition_name: string;
-  competition_country: string | null;
-  kickoff_at: string;
-  home_score: number | null;
-  away_score: number | null;
-  last_synced_at: string | null;
+type ApiEnvelope = {
+  errors?: unknown[] | Record<string, unknown> | string;
+  response?: ApiFixture[];
 };
 
 type LeagueTarget = {
   key: string;
+  id: number;
   displayName: string;
   country: string;
-  aliases: string[];
 };
 
 export type Over25LeagueStat = {
@@ -39,208 +53,136 @@ export type Over25LeagueStat = {
 export type Over25LeagueStatsPayload = {
   seasonStartYear: number;
   seasonLabel: string;
-  updatedAt: string | null;
+  updatedAt: string;
   matchesAnalysed: number;
   leaguesAnalysed: number;
   rankings: Over25LeagueStat[];
 };
 
-const PAGE_SIZE = 1000;
+const API_BASE = "https://v3.football.api-sports.io";
 const CACHE_SECONDS = 60 * 60 * 12;
-const MIN_MATCHES = 5;
+const REQUEST_GAP_MS = 325;
 
+/*
+  Exactly 10 established European domestic top-flight leagues.
+  API-Football league IDs are stable provider identifiers.
+*/
 const LEAGUES: LeagueTarget[] = [
   {
     key: "england-premier-league",
+    id: 39,
     displayName: "Premier League",
     country: "England",
-    aliases: ["Premier League"],
-  },
-  {
-    key: "england-championship",
-    displayName: "Championship",
-    country: "England",
-    aliases: ["Championship"],
-  },
-  {
-    key: "spain-la-liga",
-    displayName: "La Liga",
-    country: "Spain",
-    aliases: ["La Liga"],
-  },
-  {
-    key: "spain-segunda",
-    displayName: "Segunda División",
-    country: "Spain",
-    aliases: ["Segunda División", "Segunda Division"],
-  },
-  {
-    key: "italy-serie-a",
-    displayName: "Serie A",
-    country: "Italy",
-    aliases: ["Serie A"],
-  },
-  {
-    key: "italy-serie-b",
-    displayName: "Serie B",
-    country: "Italy",
-    aliases: ["Serie B"],
   },
   {
     key: "germany-bundesliga",
+    id: 78,
     displayName: "Bundesliga",
     country: "Germany",
-    aliases: ["Bundesliga"],
-  },
-  {
-    key: "germany-2-bundesliga",
-    displayName: "2. Bundesliga",
-    country: "Germany",
-    aliases: ["2. Bundesliga"],
-  },
-  {
-    key: "france-ligue-1",
-    displayName: "Ligue 1",
-    country: "France",
-    aliases: ["Ligue 1"],
-  },
-  {
-    key: "france-ligue-2",
-    displayName: "Ligue 2",
-    country: "France",
-    aliases: ["Ligue 2"],
   },
   {
     key: "netherlands-eredivisie",
+    id: 88,
     displayName: "Eredivisie",
     country: "Netherlands",
-    aliases: ["Eredivisie"],
+  },
+  {
+    key: "spain-la-liga",
+    id: 140,
+    displayName: "La Liga",
+    country: "Spain",
+  },
+  {
+    key: "italy-serie-a",
+    id: 135,
+    displayName: "Serie A",
+    country: "Italy",
+  },
+  {
+    key: "france-ligue-1",
+    id: 61,
+    displayName: "Ligue 1",
+    country: "France",
   },
   {
     key: "portugal-primeira-liga",
+    id: 94,
     displayName: "Primeira Liga",
     country: "Portugal",
-    aliases: ["Primeira Liga"],
   },
   {
     key: "belgium-pro-league",
+    id: 144,
     displayName: "Belgian Pro League",
     country: "Belgium",
-    aliases: ["Jupiler Pro League", "Pro League"],
-  },
-  {
-    key: "austria-bundesliga",
-    displayName: "Austrian Bundesliga",
-    country: "Austria",
-    aliases: ["Bundesliga"],
   },
   {
     key: "switzerland-super-league",
+    id: 207,
     displayName: "Swiss Super League",
     country: "Switzerland",
-    aliases: ["Super League"],
-  },
-  {
-    key: "scotland-premiership",
-    displayName: "Scottish Premiership",
-    country: "Scotland",
-    aliases: ["Premiership"],
-  },
-  {
-    key: "denmark-superliga",
-    displayName: "Danish Superliga",
-    country: "Denmark",
-    aliases: ["Superliga"],
-  },
-  {
-    key: "norway-eliteserien",
-    displayName: "Eliteserien",
-    country: "Norway",
-    aliases: ["Eliteserien"],
-  },
-  {
-    key: "sweden-allsvenskan",
-    displayName: "Allsvenskan",
-    country: "Sweden",
-    aliases: ["Allsvenskan"],
   },
   {
     key: "turkey-super-lig",
+    id: 203,
     displayName: "Süper Lig",
     country: "Turkey",
-    aliases: ["Süper Lig", "Super Lig"],
-  },
-  {
-    key: "poland-ekstraklasa",
-    displayName: "Ekstraklasa",
-    country: "Poland",
-    aliases: ["Ekstraklasa"],
-  },
-  {
-    key: "czechia-czech-liga",
-    displayName: "Czech Liga",
-    country: "Czech-Republic",
-    aliases: ["Czech Liga"],
-  },
-  {
-    key: "greece-super-league-1",
-    displayName: "Super League 1",
-    country: "Greece",
-    aliases: ["Super League 1"],
-  },
-  {
-    key: "romania-liga-i",
-    displayName: "Liga I",
-    country: "Romania",
-    aliases: ["Liga I"],
-  },
-  {
-    key: "croatia-hnl",
-    displayName: "HNL",
-    country: "Croatia",
-    aliases: ["HNL", "1. HNL"],
   },
 ];
 
-const ALL_NAMES = Array.from(
-  new Set(LEAGUES.flatMap((league) => league.aliases)),
-);
-
-function normalized(value: string | null | undefined) {
-  return (value ?? "")
-    .trim()
-    .toLocaleLowerCase("en")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-function sameCountry(actual: string | null, expected: string) {
-  const left = normalized(actual);
-  const right = normalized(expected);
+function apiErrors(errors: ApiEnvelope["errors"]) {
+  if (!errors) return "";
 
-  if (left === right) {
-    return true;
+  if (typeof errors === "string") {
+    return errors;
   }
 
-  return (
-    (right === "czech-republic" &&
-      (left === "czech republic" || left === "czechia")) ||
-    (right === "turkey" && left === "turkiye")
-  );
+  if (Array.isArray(errors)) {
+    return errors.length ? JSON.stringify(errors) : "";
+  }
+
+  return Object.keys(errors).length ? JSON.stringify(errors) : "";
 }
 
-function resolveLeague(row: FixtureRow) {
-  const name = normalized(row.competition_name);
+async function fetchLeagueSeason(
+  league: LeagueTarget,
+  season: number,
+): Promise<ApiFixture[]> {
+  const apiKey = process.env.API_FOOTBALL_KEY?.trim();
 
-  return LEAGUES.find(
-    (league) =>
-      sameCountry(row.competition_country, league.country) &&
-      league.aliases.some((alias) => normalized(alias) === name),
-  );
-}
+  if (!apiKey) {
+    throw new Error("Missing API_FOOTBALL_KEY");
+  }
 
-function seasonLabel(startYear: number) {
-  return `${startYear}/${String(startYear + 1).slice(-2)}`;
+  const url = new URL(`${API_BASE}/fixtures`);
+  url.searchParams.set("league", String(league.id));
+  url.searchParams.set("season", String(season));
+  url.searchParams.set("status", "FT");
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "x-apisports-key": apiKey,
+    },
+    cache: "no-store",
+  });
+
+  const payload = (await response.json()) as ApiEnvelope;
+  const errorText = apiErrors(payload.errors);
+
+  if (!response.ok || errorText) {
+    throw new Error(
+      `API-Football ${league.displayName}: ${
+        errorText || `HTTP ${response.status}`
+      }`,
+    );
+  }
+
+  return payload.response ?? [];
 }
 
 export function getCurrentEuropeanSeasonStartYear(now = new Date()) {
@@ -250,182 +192,129 @@ export function getCurrentEuropeanSeasonStartYear(now = new Date()) {
   return month >= 7 ? year : year - 1;
 }
 
-async function readSeasonFixtures(
-  seasonStartYear: number,
-): Promise<FixtureRow[]> {
-  const supabase = createAdminSupabaseClient();
+function seasonLabel(startYear: number) {
+  return `${startYear}/${String(startYear + 1).slice(-2)}`;
+}
 
-  const from = new Date(
-    Date.UTC(seasonStartYear, 6, 1, 0, 0, 0),
-  ).toISOString();
+function calculateLeague(
+  target: LeagueTarget,
+  fixtures: ApiFixture[],
+): Omit<Over25LeagueStat, "rank"> | null {
+  let matches = 0;
+  let over25Matches = 0;
+  let bttsMatches = 0;
+  let totalGoals = 0;
+  let totalHomeGoals = 0;
+  let totalAwayGoals = 0;
 
-  const to = new Date().toISOString();
+  for (const fixture of fixtures) {
+    const home = fixture.goals?.home;
+    const away = fixture.goals?.away;
 
-  const rows: FixtureRow[] = [];
-  let offset = 0;
-
-  while (true) {
-    const { data, error } = await supabase
-      .from("fixtures")
-      .select(
-        [
-          "competition_name",
-          "competition_country",
-          "kickoff_at",
-          "home_score",
-          "away_score",
-          "last_synced_at",
-        ].join(","),
-      )
-      .gte("kickoff_at", from)
-      .lt("kickoff_at", to)
-      .in("competition_name", ALL_NAMES)
-      .not("home_score", "is", null)
-      .not("away_score", "is", null)
-      .order("kickoff_at", { ascending: true })
-      .range(offset, offset + PAGE_SIZE - 1);
-
-    if (error) {
-      throw new Error(
-        `Could not load league statistics fixtures: ${error.message}`,
-      );
+    if (
+      typeof home !== "number" ||
+      typeof away !== "number" ||
+      !Number.isFinite(home) ||
+      !Number.isFinite(away)
+    ) {
+      continue;
     }
 
-    const batch = (data ?? []) as unknown as FixtureRow[];
-    rows.push(...batch);
+    matches += 1;
+    totalHomeGoals += home;
+    totalAwayGoals += away;
+    totalGoals += home + away;
 
-    if (batch.length < PAGE_SIZE) {
-      break;
+    if (home + away >= 3) {
+      over25Matches += 1;
     }
 
-    offset += PAGE_SIZE;
+    if (home > 0 && away > 0) {
+      bttsMatches += 1;
+    }
   }
 
-  return rows;
+  if (matches === 0) {
+    return null;
+  }
+
+  const under25Matches = matches - over25Matches;
+
+  return {
+    key: target.key,
+    league: target.displayName,
+    country: target.country,
+    matches,
+    over25Matches,
+    under25Matches,
+    over25Pct: (over25Matches / matches) * 100,
+    under25Pct: (under25Matches / matches) * 100,
+    avgGoals: totalGoals / matches,
+    bttsPct: (bttsMatches / matches) * 100,
+    avgHomeGoals: totalHomeGoals / matches,
+    avgAwayGoals: totalAwayGoals / matches,
+  };
 }
 
 async function calculateRankings(
   seasonStartYear: number,
 ): Promise<Over25LeagueStatsPayload> {
-  const fixtures = await readSeasonFixtures(seasonStartYear);
+  const rows: Omit<Over25LeagueStat, "rank">[] = [];
 
-  const aggregate = new Map<
-    string,
-    {
-      target: LeagueTarget;
-      matches: number;
-      over25: number;
-      totalGoals: number;
-      btts: number;
-      homeGoals: number;
-      awayGoals: number;
-      updatedAt: string | null;
-    }
-  >();
+  /*
+    Requests are deliberately sequential with a small gap. Ten calls every
+    12 hours is cheap and avoids hammering API-Football's rate limit.
+  */
+  for (let index = 0; index < LEAGUES.length; index += 1) {
+    const league = LEAGUES[index];
 
-  for (const fixture of fixtures) {
-    const target = resolveLeague(fixture);
+    try {
+      const fixtures = await fetchLeagueSeason(
+        league,
+        seasonStartYear,
+      );
 
-    if (!target) {
-      continue;
-    }
+      const row = calculateLeague(league, fixtures);
 
-    const home = Number(fixture.home_score);
-    const away = Number(fixture.away_score);
-
-    if (!Number.isFinite(home) || !Number.isFinite(away)) {
-      continue;
+      if (row) {
+        rows.push(row);
+      }
+    } catch (error) {
+      console.error(
+        `[League stats] Could not load ${league.displayName}:`,
+        error,
+      );
     }
 
-    const current =
-      aggregate.get(target.key) ?? {
-        target,
-        matches: 0,
-        over25: 0,
-        totalGoals: 0,
-        btts: 0,
-        homeGoals: 0,
-        awayGoals: 0,
-        updatedAt: null,
-      };
-
-    const total = home + away;
-
-    current.matches += 1;
-    current.totalGoals += total;
-    current.homeGoals += home;
-    current.awayGoals += away;
-
-    if (total >= 3) {
-      current.over25 += 1;
+    if (index < LEAGUES.length - 1) {
+      await sleep(REQUEST_GAP_MS);
     }
-
-    if (home > 0 && away > 0) {
-      current.btts += 1;
-    }
-
-    if (
-      fixture.last_synced_at &&
-      (!current.updatedAt ||
-        fixture.last_synced_at > current.updatedAt)
-    ) {
-      current.updatedAt = fixture.last_synced_at;
-    }
-
-    aggregate.set(target.key, current);
   }
 
-  const rows = Array.from(aggregate.values())
-    .filter((item) => item.matches >= MIN_MATCHES)
-    .map((item) => {
-      const over25Pct = (item.over25 / item.matches) * 100;
-      const under25Matches = item.matches - item.over25;
-
-      return {
-        key: item.target.key,
-        rank: 0,
-        league: item.target.displayName,
-        country:
-          item.target.country === "Czech-Republic"
-            ? "Czech Republic"
-            : item.target.country,
-        matches: item.matches,
-        over25Matches: item.over25,
-        under25Matches,
-        over25Pct,
-        under25Pct: (under25Matches / item.matches) * 100,
-        avgGoals: item.totalGoals / item.matches,
-        bttsPct: (item.btts / item.matches) * 100,
-        avgHomeGoals: item.homeGoals / item.matches,
-        avgAwayGoals: item.awayGoals / item.matches,
-        updatedAt: item.updatedAt,
-      };
-    })
-    .sort(
-      (a, b) =>
-        b.over25Pct - a.over25Pct ||
-        b.avgGoals - a.avgGoals ||
-        b.matches - a.matches,
+  if (rows.length === 0) {
+    throw new Error(
+      "No completed league fixtures were returned by API-Football.",
     );
+  }
 
-  const rankings: Over25LeagueStat[] = rows.map(
-    ({ updatedAt: _updatedAt, ...row }, index) => ({
-      ...row,
-      rank: index + 1,
-    }),
+  rows.sort(
+    (a, b) =>
+      b.over25Pct - a.over25Pct ||
+      b.avgGoals - a.avgGoals ||
+      b.matches - a.matches,
   );
 
-  const updatedAt =
-    rows
-      .map((row) => row.updatedAt)
-      .filter((value): value is string => Boolean(value))
-      .sort()
-      .at(-1) ?? null;
+  const rankings: Over25LeagueStat[] = rows
+    .slice(0, 10)
+    .map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
 
   return {
     seasonStartYear,
     seasonLabel: seasonLabel(seasonStartYear),
-    updatedAt,
+    updatedAt: new Date().toISOString(),
     matchesAnalysed: rankings.reduce(
       (sum, league) => sum + league.matches,
       0,
@@ -437,7 +326,7 @@ async function calculateRankings(
 
 export const getOver25LeagueRankings = unstable_cache(
   calculateRankings,
-  ["seo-over25-league-rankings-v1"],
+  ["seo-over25-league-rankings-complete-season-v2"],
   {
     revalidate: CACHE_SECONDS,
     tags: ["seo-over25-league-rankings"],

@@ -21,9 +21,9 @@ export function generateMetadata(): Metadata {
   const season = currentSeasonLabel();
 
   return {
-    title: `Best Leagues for Over 2.5 Goals ${season} | Live Stats`,
+    title: `Best Leagues for Over & Under 2.5 Goals ${season} | Live Stats`,
     description:
-      `Live ${season} Over 2.5 goals league rankings with matches analysed, goal averages, BTTS rates and home/away scoring data.`,
+      `Live ${season} football league stats for Over 2.5, Under 2.5, BTTS and average goals across 10 major European leagues.`,
     alternates: {
       canonical: "/stats/over-2-5-leagues",
     },
@@ -31,9 +31,9 @@ export function generateMetadata(): Metadata {
       type: "website",
       locale: "en_GB",
       siteName: "The Under Over Club",
-      title: `Best Leagues for Over 2.5 Goals ${season}`,
+      title: `Best Leagues for Over & Under 2.5 Goals ${season}`,
       description:
-        "Live European football league rankings by Over 2.5 goals rate, average goals and BTTS.",
+        "Live full-season Over 2.5, Under 2.5, BTTS and goals statistics for 10 major European football leagues.",
       url: "/stats/over-2-5-leagues",
     },
   };
@@ -75,9 +75,9 @@ export default async function Over25LeagueStatsPage() {
   try {
     data = await getOver25LeagueRankings(seasonStartYear);
   } catch (error) {
-    console.error("[SEO stats] Could not load Over 2.5 league rankings:", error);
+    console.error("[SEO stats] Could not load league rankings:", error);
     errorMessage =
-      "Live league data is temporarily unavailable. Please check again later.";
+      "Live full-season league data is temporarily unavailable. Please check again later.";
   }
 
   const rankings = data?.rankings ?? [];
@@ -86,25 +86,23 @@ export default async function Over25LeagueStatsPage() {
   const datasetSchema = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    name: `Best Leagues for Over 2.5 Goals ${data?.seasonLabel ?? currentSeasonLabel()}`,
+    name: `European Over and Under 2.5 League Statistics ${
+      data?.seasonLabel ?? currentSeasonLabel()
+    }`,
     description:
-      "European football leagues ranked by the percentage of completed matches finishing with at least three total goals.",
+      "Completed current-season fixtures across 10 major European domestic leagues, ranked by Over 2.5 goals percentage and including Under 2.5 and BTTS rates.",
     url: `${SITE_URL}/stats/over-2-5-leagues`,
     creator: {
       "@type": "Organization",
       name: "The Under Over Club",
       url: SITE_URL,
     },
-    temporalCoverage: data
-      ? `${data.seasonStartYear}-07-01/..`
-      : undefined,
     dateModified: data?.updatedAt ?? undefined,
     variableMeasured: [
       "Over 2.5 goals percentage",
-      "Average total goals",
+      "Under 2.5 goals percentage",
       "BTTS percentage",
-      "Average home goals",
-      "Average away goals",
+      "Average total goals",
       "Completed matches analysed",
     ],
   };
@@ -112,13 +110,17 @@ export default async function Over25LeagueStatsPage() {
   const rankingSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Over 2.5 Goals League Rankings ${data?.seasonLabel ?? currentSeasonLabel()}`,
+    name: `Over 2.5 Goals League Rankings ${
+      data?.seasonLabel ?? currentSeasonLabel()
+    }`,
     itemListOrder: "https://schema.org/ItemListOrderDescending",
     numberOfItems: rankings.length,
     itemListElement: rankings.map((league) => ({
       "@type": "ListItem",
       position: league.rank,
-      name: `${league.league} — ${pct(league.over25Pct)} Over 2.5`,
+      name: `${league.league} — ${pct(
+        league.over25Pct,
+      )} Over 2.5 / ${pct(league.under25Pct)} Under 2.5`,
     })),
   };
 
@@ -138,9 +140,11 @@ export default async function Over25LeagueStatsPage() {
       />
 
       <RetroHero
-        eyebrow="LIVE FOOTBALL STATISTICS"
-        title={<>BEST LEAGUES FOR OVER 2.5 GOALS</>}
-        subtitle={`${data?.seasonLabel ?? currentSeasonLabel()} SEASON · COMPLETED MATCHES · LIVE DATABASE`}
+        eyebrow="LIVE FULL-SEASON FOOTBALL STATISTICS"
+        title={<>OVER / UNDER 2.5 LEAGUE STATS</>}
+        subtitle={`${
+          data?.seasonLabel ?? currentSeasonLabel()
+        } · 10 EUROPEAN LEAGUES · COMPLETED MATCHES`}
         badge="UPDATED EVERY 12 HOURS"
         variant="green"
       />
@@ -157,20 +161,20 @@ export default async function Over25LeagueStatsPage() {
           <span>●</span>
           <p>
             <small>LEAGUES</small>
-            <strong>{data?.leaguesAnalysed ?? "—"}</strong>
+            <strong>{data?.leaguesAnalysed ?? "—"} / 10</strong>
           </p>
         </div>
         <div>
           <span>◎</span>
           <p>
-            <small>MATCHES ANALYSED</small>
+            <small>FULL-SEASON MATCHES</small>
             <strong>{data?.matchesAnalysed ?? "—"}</strong>
           </p>
         </div>
         <div>
           <span>↻</span>
           <p>
-            <small>LAST UPDATED</small>
+            <small>LAST REFRESH</small>
             <strong>{formattedUpdatedAt(data?.updatedAt ?? null)}</strong>
           </p>
         </div>
@@ -188,9 +192,9 @@ export default async function Over25LeagueStatsPage() {
           <div className={styles.panelTitle}>
             <div>
               <span>★</span>
-              <h2>TOP OVER 2.5 LEAGUES</h2>
+              <h2>TOP 3 FOR OVER 2.5</h2>
             </div>
-            <strong>CURRENT SEASON</strong>
+            <strong>FULL CURRENT SEASON</strong>
           </div>
 
           <div className={styles.podium}>
@@ -199,10 +203,22 @@ export default async function Over25LeagueStatsPage() {
                 <span className={styles.rank}>#{league.rank}</span>
                 <small>{league.country}</small>
                 <h3>{league.league}</h3>
-                <strong className={styles.bigPct}>
-                  {pct(league.over25Pct)}
-                </strong>
-                <span className={styles.bigLabel}>OVER 2.5</span>
+
+                <div className={styles.mainRates}>
+                  <div>
+                    <strong className={styles.overBig}>
+                      {pct(league.over25Pct)}
+                    </strong>
+                    <span>OVER 2.5</span>
+                  </div>
+
+                  <div>
+                    <strong className={styles.underBig}>
+                      {pct(league.under25Pct)}
+                    </strong>
+                    <span>UNDER 2.5</span>
+                  </div>
+                </div>
 
                 <div className={styles.miniMetrics}>
                   <div>
@@ -228,7 +244,7 @@ export default async function Over25LeagueStatsPage() {
         <div className={styles.panelTitle}>
           <div>
             <span>▥</span>
-            <h2>FULL LEAGUE RANKING</h2>
+            <h2>10-LEAGUE RANKING</h2>
           </div>
           <strong>RANKED BY OVER 2.5 %</strong>
         </div>
@@ -240,10 +256,9 @@ export default async function Over25LeagueStatsPage() {
               <span>LEAGUE</span>
               <span>MATCHES</span>
               <span>OVER 2.5</span>
-              <span>AVG GOALS</span>
+              <span>UNDER 2.5</span>
               <span>BTTS</span>
-              <span>HOME AVG</span>
-              <span>AWAY AVG</span>
+              <span>AVG GOALS</span>
             </div>
 
             {rankings.map((league) => (
@@ -259,19 +274,20 @@ export default async function Over25LeagueStatsPage() {
                 <strong className={styles.overPct}>
                   {pct(league.over25Pct)}
                 </strong>
-                <span>{decimal(league.avgGoals)}</span>
+                <strong className={styles.underPct}>
+                  {pct(league.under25Pct)}
+                </strong>
                 <span>{pct(league.bttsPct)}</span>
-                <span>{decimal(league.avgHomeGoals)}</span>
-                <span>{decimal(league.avgAwayGoals)}</span>
+                <span>{decimal(league.avgGoals)}</span>
               </div>
             ))}
           </div>
         ) : (
           <div className={styles.empty}>
-            <strong>WAITING FOR ENOUGH COMPLETED MATCHES</strong>
+            <strong>WAITING FOR FULL-SEASON DATA</strong>
             <p>
-              A league appears after at least five completed matches are
-              available in the live database.
+              The ranking will appear when API-Football returns completed
+              current-season fixtures.
             </p>
           </div>
         )}
@@ -280,52 +296,50 @@ export default async function Over25LeagueStatsPage() {
       <section className={styles.infoGrid}>
         <article className={styles.infoCard}>
           <span>01</span>
-          <h2>How the ranking is calculated</h2>
+          <h2>What does “matches” mean now?</h2>
           <p>
-            We use completed current-season matches stored in The Under Over
-            Club database. A match counts as Over 2.5 when the final total is
-            three goals or more. The percentage is Over 2.5 matches divided by
-            completed matches analysed.
+            It is the number of completed current-season fixtures returned by
+            API-Football for that league — not just the dates previously
+            imported by The Under Over Club.
           </p>
         </article>
 
         <article className={styles.infoCard}>
           <span>02</span>
-          <h2>Does a high percentage mean every match is a bet?</h2>
+          <h2>Over and Under are complementary</h2>
           <p>
-            No. League statistics describe the scoring environment. Individual
-            fixtures still need team-level analysis, home and away context,
-            probability estimates and a price that offers sufficient value.
+            With the 2.5 line there is no push. If 62% of completed matches
+            finish Over 2.5, the remaining 38% finish Under 2.5.
           </p>
         </article>
 
         <article className={styles.infoCard}>
           <span>03</span>
-          <h2>Why the rankings change</h2>
+          <h2>What does BTTS show?</h2>
           <p>
-            This is a live current-season table. As more matches finish, each
-            league's Over 2.5 rate, goal average and BTTS rate can rise or fall.
-            The cached ranking refreshes every 12 hours.
+            BTTS is the percentage of completed matches in which both teams
+            scored at least once. It is related to goal totals, but it is a
+            different market.
           </p>
         </article>
       </section>
 
       <section className={styles.cta}>
         <div>
-          <span>FROM LEAGUE DATA TO MATCH ANALYSIS</span>
-          <h2>LEAGUE TRENDS ARE CONTEXT — VALUE IS MATCH-SPECIFIC</h2>
+          <span>LEAGUE DATA IS CONTEXT</span>
+          <h2>THE INDIVIDUAL MATCH STILL NEEDS A PRICE AND A PROBABILITY</h2>
           <p>
-            Learn how to analyse Over 2.5 properly, then check today's public
-            selections and the transparent ROI record.
+            Use the league table to understand the scoring environment, then
+            move to match-level analysis and today's selections.
           </p>
         </div>
 
         <div className={styles.ctaLinks}>
-          <Link href="/guides/best-leagues-over-2-5-goals">
-            READ THE GUIDE
-          </Link>
           <Link href="/guides/how-to-predict-over-2-5-goals">
-            PREDICTION METHOD
+            O2.5 ANALYSIS GUIDE
+          </Link>
+          <Link href="/guides/under-2-5-goals">
+            UNDER 2.5 GUIDE
           </Link>
           <Link href="/today">FREE PICKS</Link>
           <Link href="/statistics">ROI STATS</Link>
