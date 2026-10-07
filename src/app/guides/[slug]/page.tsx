@@ -140,23 +140,35 @@ export default async function GuideArticlePage({
 
       <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
         <Link href="/">HOME</Link>
-        <span>/</span>
+        <span>▶</span>
         <Link href="/guides">GUIDES</Link>
-        <span>/</span>
+        <span>▶</span>
         <strong>{article.category}</strong>
       </nav>
 
-      <header className={styles.hero}>
-        <span>{article.eyebrow}</span>
-        <h1>{article.title}</h1>
-        <p>{article.intro}</p>
-      </header>
+      <section className={styles.titlePanel}>
+        <div className={styles.titleBar}>
+          <div>
+            <span>★</span>
+            <strong>{article.eyebrow}</strong>
+          </div>
+          <small>{article.category}</small>
+        </div>
+
+        <div className={styles.titleContent}>
+          <h1>{article.title}</h1>
+          <p>{article.intro}</p>
+        </div>
+      </section>
 
       <div className={styles.layout}>
         <article className={styles.article}>
-          {article.sections.map((section) => (
+          {article.sections.map((section, index) => (
             <section key={section.heading}>
-              <h2>{section.heading}</h2>
+              <div className={styles.sectionTitle}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h2>{section.heading}</h2>
+              </div>
 
               {section.paragraphs.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
@@ -173,7 +185,10 @@ export default async function GuideArticlePage({
           ))}
 
           <section className={styles.responsible}>
-            <h2>Responsible betting</h2>
+            <div className={styles.sectionTitle}>
+              <span>!</span>
+              <h2>Responsible betting</h2>
+            </div>
             <p>
               Football probabilities are estimates, not guarantees. Past
               results do not ensure future performance. Never stake money you
@@ -181,15 +196,17 @@ export default async function GuideArticlePage({
               is legal for you.
             </p>
             <Link href="/responsible-play">
-              READ RESPONSIBLE PLAY GUIDANCE →
+              READ RESPONSIBLE PLAY GUIDANCE ▶
             </Link>
           </section>
         </article>
 
         <aside className={styles.sidebar}>
           <div className={styles.sideBox}>
-            <span>SEE THE MODEL IN ACTION</span>
-            <h2>TODAY&apos;S FREE PICKS</h2>
+            <div className={styles.sideTitle}>
+              <span>●</span>
+              <strong>FREE PICKS</strong>
+            </div>
             <p>
               View the public O/U 2.5 selections currently published by The
               Under Over Club.
@@ -198,20 +215,36 @@ export default async function GuideArticlePage({
           </div>
 
           <div className={styles.sideBox}>
-            <span>TRANSPARENT RECORD</span>
-            <h2>TRACK THE ROI</h2>
+            <div className={styles.sideTitle}>
+              <span>▥</span>
+              <strong>ROI TRACKER</strong>
+            </div>
             <p>
               Review settled free and paid selections, profit/loss and ROI.
             </p>
             <Link href="/statistics">VIEW STATISTICS</Link>
+          </div>
+
+          <div className={styles.sideBox}>
+            <div className={styles.sideTitle}>
+              <span>◆</span>
+              <strong>ALL GUIDES</strong>
+            </div>
+            <p>
+              Continue learning about markets, odds, probability and value.
+            </p>
+            <Link href="/guides">BACK TO GUIDES</Link>
           </div>
         </aside>
       </div>
 
       <section className={styles.related}>
         <div className={styles.relatedTitle}>
-          <span>◆</span>
-          <h2>RELATED GUIDES</h2>
+          <div>
+            <span>◆</span>
+            <h2>RELATED GUIDES</h2>
+          </div>
+          <strong>KEEP LEARNING</strong>
         </div>
 
         <div className={styles.relatedGrid}>
@@ -224,18 +257,6 @@ export default async function GuideArticlePage({
               </Link>
             ) : null,
           )}
-        </div>
-      </section>
-
-      <section className={styles.endCta}>
-        <div>
-          <span>STATS. GOALS. PROFIT.</span>
-          <h2>KEEP LEARNING OR CHECK TODAY&apos;S BOARD</h2>
-        </div>
-        <div>
-          <Link href="/guides">ALL GUIDES</Link>
-          <Link href="/today">FREE PICKS</Link>
-          <Link href="/subscription">MEMBERSHIP</Link>
         </div>
       </section>
     </main>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import RetroHero from "@/components/retro/RetroHero";
 import {
   guideArticles,
   guideCategories,
@@ -56,26 +57,54 @@ export default function GuidesPage() {
         }}
       />
 
-      <header className={styles.hero}>
-        <span className={styles.kicker}>THE UNDER OVER CLUB ACADEMY</span>
-        <h1>FOOTBALL BETTING GUIDES</h1>
-        <p>
-          Learn the markets, understand the numbers and see how odds,
-          probability, value and ROI fit together.
-        </p>
-        <div className={styles.heroLinks}>
-          <Link href="/today">TODAY&apos;S FREE PICKS</Link>
-          <Link href="/statistics">VIEW STATISTICS</Link>
-        </div>
-      </header>
+      <RetroHero
+        eyebrow="THE UNDER OVER CLUB ACADEMY"
+        title={<>FOOTBALL BETTING GUIDES</>}
+        subtitle="LEARN THE MARKETS. UNDERSTAND THE NUMBERS. FIND THE VALUE."
+        badge="10 GUIDES ONLINE"
+        variant="gold"
+      />
 
-      <section className={styles.intro}>
-        <strong>STATS. GOALS. PROFIT. IN THAT ORDER.</strong>
-        <p>
-          These guides are educational. They explain the football markets and
-          statistical concepts used throughout the site. Probabilities are
-          estimates, not guarantees, and betting always involves risk.
-        </p>
+      <section className={styles.statusStrip}>
+        <div>
+          <span className={styles.green}>▥</span>
+          <p><small>GOALS</small><strong>3 GUIDES</strong></p>
+        </div>
+        <div>
+          <span className={styles.gold}>◆</span>
+          <p><small>BETTING BASICS</small><strong>4 GUIDES</strong></p>
+        </div>
+        <div>
+          <span className={styles.purple}>◎</span>
+          <p><small>SMARTER BETTING</small><strong>3 GUIDES</strong></p>
+        </div>
+        <div>
+          <span className={styles.blue}>▶</span>
+          <p><small>NEXT STEP</small><strong>CHECK THE DATA</strong></p>
+        </div>
+      </section>
+
+      <section className={styles.panel}>
+        <div className={styles.panelTitle}>
+          <div>
+            <span>★</span>
+            <h2>THE ACADEMY</h2>
+          </div>
+          <strong>EDUCATION BEFORE ACTION</strong>
+        </div>
+
+        <div className={styles.intro}>
+          <strong>STATS. GOALS. PROFIT. IN THAT ORDER.</strong>
+          <p>
+            These guides explain the football markets and statistical concepts
+            used throughout the site. Probabilities are estimates, not
+            guarantees, and betting always involves risk.
+          </p>
+          <div>
+            <Link href="/today">FREE PICKS</Link>
+            <Link href="/statistics">STATISTICS</Link>
+          </div>
+        </div>
       </section>
 
       {guideCategories.map((category) => {
@@ -84,10 +113,13 @@ export default function GuidesPage() {
         );
 
         return (
-          <section className={styles.category} key={category}>
-            <div className={styles.categoryHeading}>
-              <span>◆</span>
-              <h2>{category}</h2>
+          <section className={styles.panel} key={category}>
+            <div className={styles.panelTitle}>
+              <div>
+                <span>◆</span>
+                <h2>{category}</h2>
+              </div>
+              <strong>{articles.length} GUIDES</strong>
             </div>
 
             <div className={styles.grid}>
@@ -115,11 +147,11 @@ export default function GuidesPage() {
 
       <section className={styles.cta}>
         <div>
-          <span>READY TO SEE THE DATA IN ACTION?</span>
-          <h2>FROM LEARNING TO LIVE PICKS</h2>
+          <span>READY TO USE THE KNOWLEDGE?</span>
+          <h2>FROM LEARNING TO LIVE FOOTBALL DATA</h2>
           <p>
-            Explore today&apos;s free O/U 2.5 selections, the historical
-            statistics page and the members&apos; board.
+            Explore today&apos;s free selections, the historical ROI record and
+            the members&apos; board.
           </p>
         </div>
 
