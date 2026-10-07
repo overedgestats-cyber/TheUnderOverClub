@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getPublicFreePicks } from "@/lib/free-picks/public-free-picks";
 
 import RetroHero from "@/components/retro/RetroHero";
+import TrustStrip from "@/components/retro/TrustStrip";
 import styles from "./home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +80,8 @@ export default async function Home() {
         subtitle="IN THAT ORDER. LIVE FOOTBALL PICKS BUILT ON DATA, NOT GUT FEELING."
         badge="MODEL ONLINE"
       />
+
+      <TrustStrip />
 
       <section className={styles.panel}>
         <div className={styles.panelTitle}>

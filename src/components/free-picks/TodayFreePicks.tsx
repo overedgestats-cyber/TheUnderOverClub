@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import RetroHero from "@/components/retro/RetroHero";
+import TrustStrip from "@/components/retro/TrustStrip";
 
 import styles from "./TodayFreePicks.module.css";
 
@@ -143,6 +144,8 @@ export default function TodayFreePicks({
           data.displayDate,
         )}
       />
+
+      <TrustStrip />
 
       <div className={styles.contentGrid}>
         <section className={styles.mainPanel}>
@@ -338,6 +341,34 @@ export default function TodayFreePicks({
               })}
             </div>
           )}
+
+          <div className={styles.conversionCta}>
+            <div>
+              <span>READY FOR MORE?</span>
+              <strong>WANT THE FULL BOARD?</strong>
+              <p>
+                See every official paid selection across O/U 2.5, BTTS,
+                Double Chance and 1X2 — or check the transparent ROI record
+                first.
+              </p>
+            </div>
+
+            <div className={styles.conversionButtons}>
+              <Link
+                className={styles.primaryCta}
+                href="/paid-picks"
+              >
+                VIEW PAID PICKS ▶
+              </Link>
+
+              <Link
+                className={styles.secondaryCta}
+                href="/statistics"
+              >
+                VIEW STATISTICS
+              </Link>
+            </div>
+          </div>
 
           <div className={styles.premiumGate}>
             <div className={styles.premiumGateHeader}>

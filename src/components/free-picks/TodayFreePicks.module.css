@@ -262,6 +262,73 @@
 .empty h3 { margin: 0; color: var(--retro-yellow); font-size: 14px; }
 .empty p { color: #787f86; font-size: 9px; line-height: 1.6; }
 
+.conversionCta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  margin: 0 10px 10px;
+  padding: 17px;
+  border: 3px solid #477d21;
+  background:
+    linear-gradient(90deg, rgba(85, 175, 39, 0.08), transparent 65%),
+    #071008;
+  box-shadow: inset 0 0 0 1px #193018;
+}
+
+.conversionCta > div:first-child > span {
+  display: block;
+  color: var(--retro-green-bright);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.conversionCta > div:first-child > strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--retro-yellow);
+  font-size: 16px;
+}
+
+.conversionCta p {
+  max-width: 640px;
+  margin: 8px 0 0;
+  color: #8e989f;
+  font-size: 8px;
+  line-height: 1.65;
+}
+
+.conversionButtons {
+  display: grid;
+  gap: 7px;
+  min-width: 175px;
+}
+
+.primaryCta,
+.secondaryCta {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  padding: 9px 12px;
+  text-decoration: none;
+  font-size: 8px;
+  font-weight: 900;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.primaryCta {
+  border: 2px solid var(--retro-green-bright);
+  background: #17370f;
+  color: var(--retro-green-bright);
+}
+
+.secondaryCta {
+  border: 2px solid #4b5660;
+  background: #0b1014;
+  color: #c1c7cc;
+}
+
 .premiumGate {
   margin: 0 10px 10px;
   padding: 10px;
@@ -364,6 +431,8 @@
 
 @media (max-width: 700px) {
   .pickGrid { grid-template-columns: 1fr; }
+  .conversionCta { grid-template-columns: 1fr; }
+  .conversionButtons { min-width: 0; }
   .lockedSlots { grid-template-columns: repeat(2, 1fr); }
   .sideRail { grid-template-columns: 1fr; }
   .infoStrip { flex-direction: column; }

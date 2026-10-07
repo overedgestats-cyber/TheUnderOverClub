@@ -1,40 +1,63 @@
-THE UNDER OVER CLUB — MAKE LEAGUE STATS VISIBLE
+THE UNDER OVER CLUB — CONVERSION + TRUST UPDATE
 
-This fixes the navigation issue.
+WHAT THIS ADDS
 
-CHANGES
-1. Adds LEAGUE STATS directly under STATS in the desktop/sidebar navigation.
-2. Adds a visible LEAGUE STATS shortcut on the /statistics page.
-3. The shortcut shows O2.5 · U2.5 · BTTS.
-4. Mobile bottom navigation remains at 6 items so it does not become overcrowded.
-5. On mobile, the Statistics page shortcut becomes full-width.
+1. TODAY'S PICKS CONVERSION CTA
+Directly under the free picks:
+- "WANT THE FULL BOARD?"
+- VIEW PAID PICKS
+- VIEW STATISTICS
 
-FILES TO REPLACE
-src/components/retro/RetroNavigation.tsx
-src/components/statistics/StatisticsDashboard.tsx
-src/components/statistics/StatisticsDashboard.module.css
+This gives visitors an obvious next step after seeing the two free picks.
+
+2. REUSABLE TRUST STRIP
+Shows:
+- LIVE RESULTS
+- ROI TRACKED
+- EVERY PICK RECORDED
+- NO DELETED LOSSES
+
+Placed on:
+- Home
+- Today's Free Picks
+- Membership
+
+This keeps the transparency message visible on the highest-conversion public pages
+without repeating it everywhere.
+
+FILES
+
+NEW:
+src/components/retro/TrustStrip.tsx
+src/components/retro/TrustStrip.module.css
+
+REPLACE:
+src/app/page.tsx
+src/components/free-picks/TodayFreePicks.tsx
+src/components/free-picks/TodayFreePicks.module.css
+src/app/subscription/page.tsx
+
+NO DATABASE OR API CHANGES.
+NO PICK / SETTLEMENT LOGIC CHANGES.
+NO STRIPE OR AUTH CHANGES.
 
 INSTALL
-Extract to:
+Extract into:
 C:\Users\Marty\Desktop\theunderoverclub
 
 Then:
 npm run build
+npm run dev
 
-Deploy:
+Check:
+http://localhost:3000/
+http://localhost:3000/today
+http://localhost:3000/subscription
+
+DEPLOY
 git add .
-git commit -m "Add League Stats navigation"
+git commit -m "Improve conversion and add trust strip"
 git push origin main
 
-Or:
+If GitHub errors:
 npx vercel --prod
-
-AFTER DEPLOYMENT
-You should see:
-STATS
-LEAGUE STATS
-GUIDES
-
-in the left sidebar.
-
-And on /statistics you should see a LEAGUE STATS button next to/below the Free Picks / Paid Picks tabs.

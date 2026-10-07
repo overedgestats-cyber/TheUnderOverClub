@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getConfiguredPlans } from "@/lib/stripe/plans";
 import RetroHero from "@/components/retro/RetroHero";
+import TrustStrip from "@/components/retro/TrustStrip";
 import TrackedCheckoutForm from "@/components/analytics/TrackedCheckoutForm";
 
 import styles from "./subscription.module.css";
@@ -39,6 +40,8 @@ export default async function SubscriptionPage() {
         badge="SECURE CHECKOUT"
         variant="gold"
       />
+
+      <TrustStrip />
 
       {configError ? (
         <div className={styles.notice}>
