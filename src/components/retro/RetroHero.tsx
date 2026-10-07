@@ -21,8 +21,8 @@ export default function RetroHero({
       <Image
         className={styles.heroImage}
         src="/brand/euro-arcade-bowl.jpg"
-        alt="Retro pixel-art European football stadium at night with arcade scoreboards and The Under Over Club slogan"
-        width={1536}
+        alt="The Under Over Club pixel-art football stadium hero artwork"
+        width={1408}
         height={1024}
         priority
         sizes="(max-width: 900px) 100vw, calc(100vw - 280px)"

@@ -1,21 +1,11 @@
-THE UNDER OVER CLUB — GUIDES + ABOUT RESTYLE
+THE UNDER OVER CLUB — UPDATED SHARED HERO IMAGE
 
-This package makes the About page, Guides hub and individual Guide article pages match the main retro dashboard style.
+This package replaces the shared hero artwork used across pages with the new uploaded image.
 
-REPLACE THESE FILES:
-src/app/about/page.tsx
-src/app/about/page.module.css
-src/app/guides/page.tsx
-src/app/guides/page.module.css
-src/app/guides/[slug]/page.tsx
-src/app/guides/[slug]/page.module.css
-
-WHAT CHANGES
-- About uses the shared RetroHero and dashboard-style stat strip/panels.
-- Guides uses the shared RetroHero and the same panel/card language as the rest of the site.
-- Individual guide articles now use retro panel headers, numbered sections and HUD-style side cards.
-- About copy focuses on ROI rather than win rate.
-- SEO metadata and structured data remain intact.
+FILES INCLUDED
+- public/brand/euro-arcade-bowl.jpg
+- src/components/retro/RetroHero.tsx
+- src/components/retro/RetroHero.module.css
 
 INSTALL
 1. Extract this ZIP into:
@@ -23,9 +13,10 @@ INSTALL
 2. Allow Windows to merge folders and replace files.
 3. Run:
    npm run build
-4. If successful:
+4. If build succeeds:
    git add .
-   git commit -m "Restyle Guides and About pages"
+   git commit -m "Update shared hero artwork"
    git push origin main
 
-If you also installed the Euro Arcade Bowl RetroHero replacement, these pages will automatically use that new shared hero artwork too.
+NOTE
+If you already installed the previous shared hero setup, the important change is the new image file. The included component files are there just to make sure everything stays wired correctly.
