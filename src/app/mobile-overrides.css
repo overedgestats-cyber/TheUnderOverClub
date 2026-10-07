@@ -1,0 +1,639 @@
+/* THE UNDER OVER CLUB — SITE-WIDE MOBILE RESPONSIVE OVERRIDES
+   Loaded after the existing CSS so desktop styling stays unchanged. */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Prevent long email addresses, team names, URLs and labels from forcing overflow. */
+a,
+p,
+span,
+strong,
+small,
+h1,
+h2,
+h3,
+li {
+  overflow-wrap: anywhere;
+}
+
+/* -------------------------------------------------------------------------- */
+/* SHARED RETRO SHELL                                                         */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  [class*="RetroShell-module"][class*="app"] {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    overflow-x: clip !important;
+  }
+
+  [class*="RetroShell-module"][class*="content"] {
+    width: 100%;
+    min-width: 0 !important;
+    overflow-x: clip;
+  }
+
+  [class*="RetroShell-module"][class*="hud"] {
+    width: 100%;
+    max-width: 100%;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+
+  [class*="RetroShell-module"][class*="hudStat"],
+  [class*="RetroShell-module"][class*="hudMember"] {
+    scroll-snap-align: start;
+    min-width: 128px !important;
+    padding: 8px 9px !important;
+    gap: 8px !important;
+  }
+
+  [class*="RetroShell-module"][class*="hudMember"] {
+    min-width: 160px !important;
+  }
+
+  [class*="RetroShell-module"][class*="mobileNav"] {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    left: 4px !important;
+    right: 4px !important;
+    bottom: max(4px, env(safe-area-inset-bottom)) !important;
+    min-height: 62px !important;
+  }
+
+  [class*="RetroShell-module"][class*="mobileNav"]
+    [class*="navItem"] {
+    min-width: 0 !important;
+    font-size: 6.5px !important;
+    letter-spacing: 0 !important;
+  }
+
+  [class*="RetroShell-module"][class*="footer"] {
+    width: 100%;
+    min-width: 0;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  [class*="RetroShell-module"][class*="footer"] nav {
+    gap: 8px !important;
+  }
+
+  [class*="RetroShell-module"][class*="footer"] a {
+    padding: 4px 0;
+    font-size: 7px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  [class*="RetroShell-module"][class*="hudStat"] {
+    min-width: 116px !important;
+  }
+
+  [class*="RetroShell-module"][class*="hudMember"] {
+    min-width: 145px !important;
+  }
+
+  [class*="RetroShell-module"][class*="hudStat"] > span {
+    font-size: 17px !important;
+  }
+
+  [class*="RetroShell-module"][class*="hudStat"] strong {
+    font-size: 12px !important;
+  }
+
+  [class*="RetroShell-module"][class*="hudStat"] small,
+  [class*="RetroShell-module"][class*="hudMember"] small {
+    font-size: 6px !important;
+  }
+
+  [class*="RetroShell-module"][class*="footer"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="RetroShell-module"][class*="footer"] > div:nth-child(2) {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* SHARED HERO                                                                */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  [class*="RetroHero-module"][class*="hero"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  [class*="RetroHero-module"][class*="heroImage"] {
+    width: 100% !important;
+    height: 250px !important;
+    object-fit: cover !important;
+    object-position: center 50% !important;
+  }
+}
+
+@media (max-width: 520px) {
+  [class*="RetroHero-module"][class*="heroImage"] {
+    height: 185px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* HOME                                                                       */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  [class*="home-module"][class*="panelTitle"] {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 9px !important;
+  }
+
+  [class*="home-module"][class*="panelTitle"] a {
+    width: 100%;
+    min-height: 40px;
+    display: grid !important;
+    place-items: center;
+  }
+
+  [class*="home-module"][class*="pickDeck"] {
+    padding: 7px !important;
+  }
+
+  [class*="home-module"][class*="pickCard"],
+  [class*="home-module"][class*="lockedCard"] {
+    padding: 12px !important;
+  }
+
+  [class*="home-module"][class*="teamRow"] strong,
+  [class*="home-module"][class*="matchList"] p {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  [class*="home-module"][class*="widget"] {
+    min-height: 0 !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* TODAY / FREE PICKS                                                         */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  [class*="TodayFreePicks-module"][class*="page"],
+  [class*="TodayFreePicks-module"][class*="contentGrid"],
+  [class*="TodayFreePicks-module"][class*="mainPanel"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  [class*="TodayFreePicks-module"][class*="panelHeader"] {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 7px;
+  }
+
+  [class*="TodayFreePicks-module"][class*="pickGrid"] {
+    padding: 7px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="teams"] {
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="teamBadge"] {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="teamBadge"] img {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="teams"] strong {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: 10px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="metrics"] strong {
+    font-size: 14px !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="cardFooter"],
+  [class*="TodayFreePicks-module"][class*="premiumGateHeader"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="premiumGateHeader"] a {
+    width: 100%;
+    min-height: 40px;
+    display: grid;
+    place-items: center;
+  }
+}
+
+@media (max-width: 420px) {
+  [class*="TodayFreePicks-module"][class*="metrics"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="TodayFreePicks-module"][class*="metrics"] div + div {
+    border-left: 0 !important;
+    border-top: 1px solid var(--retro-line-soft);
+  }
+
+  [class*="TodayFreePicks-module"][class*="lockedSlots"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* PAID PICKS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  [class*="PaidPicksBoard-module"][class*="boardLayout"],
+  [class*="PaidPicksBoard-module"][class*="board"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="filters"] {
+    padding: 8px !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="filter"] {
+    scroll-snap-align: start;
+    min-height: 40px;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="boardTitle"] {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="row"] {
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="fixture"] {
+    grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr) !important;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="fixture"] > div {
+    align-items: flex-start !important;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="fixture"] strong {
+    width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="analysisPanel"] {
+    min-width: 0 !important;
+  }
+
+  [class*="PaidPicksBoard-module"][class*="boardFooter"] {
+    flex-direction: column !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* STATISTICS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  [class*="StatisticsDashboard-module"][class*="sectionHeader"] {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  [class*="StatisticsDashboard-module"][class*="metricGrid"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  [class*="StatisticsDashboard-module"][class*="metricCard"] {
+    min-height: 96px !important;
+    padding: 11px !important;
+    gap: 9px !important;
+  }
+
+  [class*="StatisticsDashboard-module"][class*="metricIcon"] {
+    font-size: 24px !important;
+  }
+
+  [class*="StatisticsDashboard-module"][class*="metricValue"] {
+    font-size: 20px !important;
+  }
+
+  [class*="StatisticsDashboard-module"][class*="marketTable"] {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 430px) {
+  [class*="StatisticsDashboard-module"][class*="metricGrid"],
+  [class*="StatisticsDashboard-module"][class*="splitGrid"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* MEMBERSHIP                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  [class*="subscription-module"][class*="planGrid"],
+  [class*="subscription-module"][class*="lowerGrid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="subscription-module"][class*="plan"] {
+    width: 100%;
+    min-width: 0;
+    padding: 20px 16px !important;
+  }
+
+  [class*="subscription-module"][class*="plan"] h2 {
+    font-size: 31px !important;
+  }
+
+  [class*="subscription-module"][class*="featureRows"] > div {
+    grid-template-columns: minmax(0, 1fr) 55px 70px !important;
+    padding: 9px !important;
+  }
+
+  [class*="subscription-module"][class*="checkoutPanel"] {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 420px) {
+  [class*="subscription-module"][class*="featureRows"] > div {
+    grid-template-columns: minmax(0, 1fr) 44px 56px !important;
+  }
+
+  [class*="subscription-module"][class*="featureRows"] p,
+  [class*="subscription-module"][class*="featureRows"] strong {
+    font-size: 7px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ACCOUNT                                                                    */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  [class*="account-module"][class*="accountGrid"],
+  [class*="account-module"][class*="detailGrid"],
+  [class*="account-module"][class*="systemRows"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="account-module"][class*="playerCard"] {
+    min-height: 280px !important;
+  }
+
+  [class*="account-module"][class*="playerCard"] p {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  [class*="account-module"][class*="detailGrid"] > div {
+    min-height: 78px !important;
+    border-right: 0 !important;
+  }
+
+  [class*="account-module"][class*="actions"] {
+    flex-direction: column !important;
+  }
+
+  [class*="account-module"][class*="actions"] a,
+  [class*="account-module"][class*="actions"] button,
+  [class*="account-module"][class*="actions"] form {
+    width: 100% !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* PENALTY GAME                                                               */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  [class*="PenaltyGame-module"][class*="page"],
+  [class*="PenaltyGame-module"][class*="gameLayout"],
+  [class*="PenaltyGame-module"][class*="mainColumn"],
+  [class*="PenaltyGame-module"][class*="gamePanel"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  [class*="PenaltyGame-module"][class*="topBar"],
+  [class*="PenaltyGame-module"][class*="sectionTitle"] {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  [class*="PenaltyGame-module"][class*="scene"] {
+    min-height: 210px;
+  }
+
+  [class*="PenaltyGame-module"][class*="actionPrompt"] {
+    min-width: 0 !important;
+    width: 72% !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
+    white-space: normal !important;
+    text-align: center;
+  }
+
+  [class*="PenaltyGame-module"][class*="attempts"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  [class*="PenaltyGame-module"][class*="attempts"] > div {
+    min-height: 58px !important;
+  }
+
+  [class*="PenaltyGame-module"][class*="table"] {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 430px) {
+  [class*="PenaltyGame-module"][class*="ball"] {
+    width: 58px !important;
+  }
+
+  [class*="PenaltyGame-module"][class*="attempts"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  [class*="PenaltyGame-module"][class*="statGrid"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ABOUT + GUIDES                                                             */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 520px) {
+  [class*="about"][class*="statusStrip"],
+  [class*="guides"][class*="statusStrip"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="about"][class*="statusStrip"] > div,
+  [class*="guides"][class*="statusStrip"] > div {
+    min-height: 72px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--retro-line-soft);
+  }
+
+  [class*="about"][class*="statusStrip"] > div:last-child,
+  [class*="guides"][class*="statusStrip"] > div:last-child {
+    border-bottom: 0;
+  }
+
+  [class*="about"][class*="grid"],
+  [class*="guides"][class*="grid"] {
+    padding: 8px !important;
+  }
+
+  [class*="about"][class*="card"],
+  [class*="guides"][class*="card"] {
+    padding: 18px !important;
+  }
+
+  [class*="guides"][class*="titleContent"] h1 {
+    font-size: 28px !important;
+  }
+
+  [class*="guides"][class*="article"] {
+    padding: 6px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* LEGAL / CONTACT / PRIVACY / TERMS / RESPONSIBLE PLAY                       */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 660px) {
+  [class*="LegalShell-module"][class*="page"] {
+    padding: 5px !important;
+  }
+
+  [class*="LegalShell-module"][class*="header"] {
+    padding: 10px !important;
+  }
+
+  [class*="LegalShell-module"][class*="brand"] {
+    width: 100%;
+  }
+
+  [class*="LegalShell-module"][class*="header"] nav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px !important;
+  }
+
+  [class*="LegalShell-module"][class*="header"] nav a {
+    display: grid;
+    place-items: center;
+    min-height: 40px;
+    text-align: center;
+  }
+
+  [class*="LegalShell-module"][class*="hero"] {
+    padding: 20px 14px !important;
+  }
+
+  [class*="LegalShell-module"][class*="hero"] h1 {
+    font-size: clamp(28px, 10vw, 42px) !important;
+  }
+
+  [class*="LegalShell-module"][class*="content"] {
+    padding: 20px 16px !important;
+  }
+
+  [class*="LegalShell-module"][class*="content"] p,
+  [class*="LegalShell-module"][class*="content"] li {
+    font-size: 10px !important;
+    line-height: 1.8 !important;
+  }
+
+  [class*="LegalShell-module"][class*="footer"] nav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* CLERK AUTH                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .cl-rootBox,
+  .cl-cardBox,
+  .cl-card {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .cl-card {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* Make tap targets comfortable without changing desktop. */
+@media (pointer: coarse) and (max-width: 900px) {
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    touch-action: manipulation;
+  }
+
+  button:not([class*="target"]),
+  input,
+  select {
+    min-height: 40px;
+  }
+}
